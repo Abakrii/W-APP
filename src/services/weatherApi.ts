@@ -61,4 +61,14 @@ class WeatherApiService {
   }
 }
 
+
+/**
+ * Converts temperature from Kelvin to Celsius
+ * @param kelvin - Temperature in Kelvin
+ * @returns Temperature in Celsius rounded to nearest integer
+ */
+export const kelvinToCelsius = (kelvin: number): number => {
+    return Math.round(kelvin - Constants.WEATHER.KELVIN_OFFSET);
+  };
+
 export const weatherApi = new WeatherApiService();

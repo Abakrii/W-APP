@@ -9,8 +9,8 @@ import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../App';
 import { HistoricalEntry } from '../services/types';
 import { storageService } from '../services/storage';
-import { kelvinToCelsius } from '../utils/helpers';
-import { formatDate, capitalizeWords } from '../utils/formatters';
+import { kelvinToCelsius } from '../services/weatherApi';
+import { formatHistoricalDate, capitalizeFirst } from '../utils/formatters';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ErrorMessage from '../components/common/ErrorMessage';
 
@@ -21,8 +21,7 @@ interface HistoricalDataScreenProps {
 }
 
 /**
- * HistoricalDataScreen displays historical weather data for a selected city
- * Shows all previous weather requests with timestamps and weather conditions
+ * HistoricalDataScreen displays historical weather data exactly like the design
  */
 const HistoricalDataScreen: React.FC<HistoricalDataScreenProps> = ({ route }) => {
   const { city } = route.params;
@@ -34,9 +33,6 @@ const HistoricalDataScreen: React.FC<HistoricalDataScreenProps> = ({ route }) =>
     loadHistoricalData();
   }, [city]);
 
-  /**
-   * Loads historical weather data for the city from storage
-   */
   const loadHistoricalData = async () => {
     setLoading(true);
     setError(null);
@@ -52,19 +48,15 @@ const HistoricalDataScreen: React.FC<HistoricalDataScreenProps> = ({ route }) =>
     }
   };
 
-  /**
-   * Renders each historical weather entry in the list
-   * @param item - Historical weather data entry
-   */
   const renderHistoryItem = ({ item }: { item: HistoricalEntry }) => {
     const temperature = kelvinToCelsius(item.data.main.temp);
     const description = item.data.weather[0]?.description 
-      ? capitalizeWords(item.data.weather[0].description)
+      ? capitalizeFirst(item.data.weather[0].description)
       : 'N/A';
     
     return (
       <View style={styles.historyItem} testID={`history-item-${item.timestamp}`}>
-        <Text style={styles.dateText}>{formatDate(item.timestamp)}</Text>
+        <Text style={styles.dateText}>{formatHistoricalDate(item.timestamp)}</Text>
         <Text style={styles.weatherText}>
           {description}, {temperature}°C
         </Text>
@@ -88,6 +80,7 @@ const HistoricalDataScreen: React.FC<HistoricalDataScreenProps> = ({ route }) =>
 
   return (
     <View style={styles.container}>
+      {/* Title exactly like design */}
       <Text style={styles.title}>{city.name} historical</Text>
       
       <FlatList
@@ -100,6 +93,7 @@ const HistoricalDataScreen: React.FC<HistoricalDataScreenProps> = ({ route }) =>
           </Text>
         }
         testID="historical-data-list"
+        style={styles.list}
       />
     </View>
   );
@@ -109,36 +103,40 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingTop: 20,
+    paddingHorizontal: 24,
+    paddingTop: 60, // Exact spacing like design
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 20,
+    fontSize: 34, // Exact size like design
+    fontWeight: '700', // Bold like design
+    color: '#000000',
+    marginBottom: 30, // Exact spacing like design
+  },
+  list: {
+    flex: 1,
   },
   historyItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    paddingVertical: 12, // Exact spacing like design
+    paddingHorizontal: 0,
+    borderBottomWidth: 0, // No borders like design
   },
   dateText: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
+    fontSize: 17, // Exact font size like design
+    color: '#000000', // Black color like design
+    fontWeight: '400', // Regular weight like design
+    marginBottom: 4, // Exact spacing like design
   },
   weatherText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
+    fontSize: 17, // Exact font size like design
+    fontWeight: '600', // Bold weight like design (from the bold text in design)
+    color: '#000000',
   },
   emptyText: {
     textAlign: 'center',
-    color: '#666',
-    fontSize: 16,
+    color: '#666666',
+    fontSize: 17,
     marginTop: 40,
+    fontStyle: 'italic',
   },
 });
 

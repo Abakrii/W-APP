@@ -9,10 +9,9 @@ import {
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../App';
 import { WeatherData } from '../services/types';
-import { weatherApi } from '../services/weatherApi';
-import { kelvinToCelsius } from '../utils/helpers';
+import { weatherApi, kelvinToCelsius } from '../services/weatherApi';
 import { storageService } from '../services/storage';
-import { formatDate, capitalizeWords } from '../utils/formatters';
+import { formatDate, capitalizeFirst } from '../utils/formatters';
 import WeatherDetailRow from '../components/weather/WeatherDetailRow';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ErrorMessage from '../components/common/ErrorMessage';
@@ -24,9 +23,7 @@ interface CityDetailScreenProps {
 }
 
 /**
- * CityDetailScreen displays detailed weather information for a selected city
- * Shows temperature, humidity, wind speed, and weather description
- * Automatically fetches fresh data when opened and saves to history
+ * CityDetailScreen displays detailed weather information exactly like the design
  */
 const CityDetailScreen: React.FC<CityDetailScreenProps> = ({ route }) => {
   const { city } = route.params;
@@ -39,9 +36,6 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({ route }) => {
     loadWeatherData();
   }, [city]);
 
-  /**
-   * Fetches current weather data for the city and updates the state
-   */
   const loadWeatherData = async () => {
     setLoading(true);
     setError(null);
@@ -52,10 +46,8 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({ route }) => {
       if (result.success && result.data) {
         setWeatherData(result.data);
         
-        // Save to historical data
         await storageService.saveWeatherData(city.name, result.data);
         
-        // Set last updated timestamp
         const now = new Date();
         setLastUpdated(formatDate(now));
       } else {
@@ -69,9 +61,6 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({ route }) => {
     }
   };
 
-  /**
-   * Handles retry action when weather data loading fails
-   */
   const handleRetry = () => {
     loadWeatherData();
   };
@@ -100,15 +89,17 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({ route }) => {
 
   const temperature = kelvinToCelsius(weatherData.main.temp);
   const description = weatherData.weather[0]?.description 
-    ? capitalizeWords(weatherData.weather[0].description)
+    ? capitalizeFirst(weatherData.weather[0].description)
     : 'N/A';
   const humidity = weatherData.main.humidity;
   const windSpeed = weatherData.wind.speed;
 
   return (
     <ScrollView style={styles.container}>
+      {/* Title exactly like design */}
       <Text style={styles.title}>{city.name}, {city.country}</Text>
       
+      {/* Weather details table exactly like design */}
       <View style={styles.weatherCard}>
         <WeatherDetailRow 
           label="Description" 
@@ -117,24 +108,26 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({ route }) => {
         />
         <WeatherDetailRow 
           label="Temperature" 
-          value={`${temperature}° C`}
+          value={`${temperature}° C`} // Exact format like design
           testID="weather-temperature"
         />
         <WeatherDetailRow 
           label="Humidity" 
-          value={`${humidity}%`}
+          value={`${humidity}%`} // Exact format like design
           testID="weather-humidity"
         />
         <WeatherDetailRow 
           label="Windspeed" 
-          value={`${windSpeed} km/h`}
+          value={`${windSpeed} km/h`} // Exact format like design
           testID="weather-windspeed"
         />
       </View>
 
+      {/* Last updated text exactly like design */}
       {lastUpdated && (
         <Text style={styles.lastUpdated} testID="last-updated">
-          Weather information for {city.name} received on {lastUpdated}
+          Weather information for {city.name} received on {"\n"}
+          {lastUpdated.replace(' - ', ' - ')} // Exact format like design
         </Text>
       )}
 
@@ -153,8 +146,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingTop: 20,
+    paddingHorizontal: 24,
+    paddingTop: 60, // Exact spacing like design
   },
   centerContainer: {
     flex: 1,
@@ -163,25 +156,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 20,
-    textAlign: 'center',
+    fontSize: 34, // Exact size like design
+    fontWeight: '700', // Bold like design
+    color: '#000000',
+    marginBottom: 30, // Exact spacing like design
+    textAlign: 'left', // Left aligned like design
   },
   weatherCard: {
-    backgroundColor: '#F8F8F8',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
+    backgroundColor: '#F8F8F8', // Light grey background like design
+    borderRadius: 0, // No border radius like design
+    padding: 0, // No padding like design
+    marginBottom: 30, // Exact spacing like design
+    borderWidth: 0, // No border like design
   },
   lastUpdated: {
-    textAlign: 'center',
-    color: '#666',
-    fontSize: 14,
-    fontStyle: 'italic',
-    marginTop: 8,
-    marginBottom: 16,
+    textAlign: 'left', // Left aligned like design
+    color: '#000000', // Black color like design
+    fontSize: 17, // Exact font size like design
+    fontWeight: '400', // Regular weight like design
+    lineHeight: 22, // Proper line height
   },
 });
 

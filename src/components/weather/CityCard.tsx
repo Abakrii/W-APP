@@ -10,11 +10,7 @@ interface CityCardProps {
 }
 
 /**
- * CityCard component displays a city with actions for viewing details, history, and removal
- * @param city - City object to display
- * @param onPress - Callback when city is pressed for details
- * @param onHistoryPress - Callback when history button is pressed
- * @param onRemovePress - Callback when remove button is pressed
+ * CityCard component displays a city exactly like the design with dash prefix
  */
 const CityCard: React.FC<CityCardProps> = ({
   city,
@@ -24,6 +20,9 @@ const CityCard: React.FC<CityCardProps> = ({
 }) => {
   return (
     <View style={styles.container}>
+      {/* Dash before city name exactly like design */}
+      <Text style={styles.dash}>-</Text>
+      
       <TouchableOpacity 
         style={styles.cityInfo}
         onPress={() => onPress(city)}
@@ -58,20 +57,25 @@ const CityCard: React.FC<CityCardProps> = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    paddingVertical: 12,
+    paddingHorizontal: 0,
+    borderBottomWidth: 0, // No borders like design
+  },
+  dash: {
+    fontSize: 17,
+    color: '#000000',
+    fontWeight: '400',
+    marginRight: 8,
+    width: 10, // Fixed width for alignment
   },
   cityInfo: {
     flex: 1,
   },
   cityText: {
     fontSize: 17,
-    color: '#000',
-    fontWeight: '400',
+    color: '#000000',
+    fontWeight: '400', // Regular weight like design
   },
   actions: {
     flexDirection: 'row',
@@ -79,7 +83,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   historyButton: {
-    backgroundColor: '#34C759',
+    backgroundColor: '#34C759', // Green like design
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
@@ -90,7 +94,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   removeButton: {
-    backgroundColor: '#FF3B30',
+    backgroundColor: '#FF3B30', // Red like design
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,

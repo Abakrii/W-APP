@@ -13,7 +13,7 @@ import { City } from '../services/types';
 import { storageService } from '../services/storage';
 import { weatherApi } from '../services/weatherApi';
 import { validateCityName } from '../utils/helpers';
-import { capitalizeWords } from '../utils/formatters';
+import { capitalizeFirst } from '../utils/formatters';
 import CityCard from '../components/weather/CityCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ErrorMessage from '../components/common/ErrorMessage';
@@ -23,8 +23,8 @@ interface CitiesScreenProps {
 }
 
 /**
- * CitiesScreen displays the list of saved cities and allows adding new cities
- * Features search functionality and city management (add/remove/view details/history)
+ * CitiesScreen displays the list of saved cities exactly like the design
+ * Features search functionality and city management
  */
 const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
   const [cities, setCities] = useState<City[]>([]);
@@ -33,16 +33,12 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load cities when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       loadCities();
     }, [])
   );
 
-  /**
-   * Loads cities from storage
-   */
   const loadCities = async () => {
     setIsLoading(true);
     setError(null);
@@ -57,11 +53,13 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
     }
   };
 
-  /**
-   * Handles adding a new city
-   * Validates input, fetches weather data, and saves city if valid
-   */
   const handleAddCity = async () => {
+    if (!searchQuery.trim()) {
+      // When search is empty, just clear and show default list like design
+      setSearchQuery('');
+      return;
+    }
+
     const validation = validateCityName(searchQuery);
     if (!validation.isValid) {
       Alert.alert('Invalid City Name', validation.error);
@@ -72,7 +70,7 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
     setError(null);
     
     try {
-      const formattedCityName = capitalizeWords(searchQuery.trim());
+      const formattedCityName = capitalizeFirst(searchQuery.trim());
       const result = await weatherApi.getCurrentWeather(formattedCityName);
       
       if (result.success && result.data) {
@@ -85,7 +83,6 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
         setCities(updatedCities);
         setSearchQuery('');
         
-        // Save to historical data
         await storageService.saveWeatherData(cityData.name, result.data);
       } else {
         Alert.alert('Error', result.error || 'Failed to add city');
@@ -98,10 +95,6 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
     }
   };
 
-  /**
-   * Handles city removal with confirmation dialog
-   * @param cityName - Name of city to remove
-   */
   const handleRemoveCity = (cityName: string) => {
     Alert.alert(
       'Remove City',
@@ -117,10 +110,6 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
     );
   };
 
-  /**
-   * Removes city from storage
-   * @param cityName - Name of city to remove
-   */
   const removeCity = async (cityName: string) => {
     try {
       const updatedCities = await storageService.removeCity(cityName);
@@ -131,18 +120,10 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
     }
   };
 
-  /**
-   * Handles navigation to city details screen
-   * @param city - City object to view details for
-   */
   const handleCityPress = (city: City) => {
     navigation.navigate('CityDetail', { city });
   };
 
-  /**
-   * Handles navigation to historical data screen
-   * @param city - City object to view history for
-   */
   const handleHistoryPress = (city: City) => {
     navigation.navigate('HistoricalData', { city });
   };
@@ -171,9 +152,24 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      {/* Title - Exact match to design */}
       <Text style={styles.title}>Cities</Text>
       
-      {/* Search Section */}
+      {/* Cities List - Exact match to design with dashes */}
+      <FlatList
+        data={cities}
+        renderItem={renderCityItem}
+        keyExtractor={(item) => `${item.name}-${item.country}`}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No cities added yet</Text>
+        }
+        style={styles.list}
+      />
+
+      {/* Divider - Exact match to design */}
+      <View style={styles.divider} />
+
+      {/* Search/Add Section - Exact match to design */}
       <View style={styles.searchSection}>
         <TextInput
           style={styles.searchInput}
@@ -182,7 +178,7 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
           value={searchQuery}
           onChangeText={setSearchQuery}
           onSubmitEditing={handleAddCity}
-          returnKeyType="search"
+          returnKeyType="done"
           testID="city-search-input"
         />
         <TouchableOpacity
@@ -200,20 +196,6 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Divider */}
-      <View style={styles.divider} />
-
-      {/* Cities List */}
-      <FlatList
-        data={cities}
-        renderItem={renderCityItem}
-        keyExtractor={(item) => `${item.name}-${item.country}`}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>No cities added yet</Text>
-        }
-        testID="cities-list"
-      />
-
       {error && cities.length > 0 && (
         <ErrorMessage 
           message={error} 
@@ -229,57 +211,57 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingTop: 20,
+    paddingHorizontal: 24,
+    paddingTop: 60, // Exact spacing from top like design
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 20,
+    fontSize: 34, // Exact size like design
+    fontWeight: '700', // Bold like design
+    color: '#000000',
+    marginBottom: 30, // Exact spacing like design
   },
-  searchSection: {
-    flexDirection: 'row',
-    marginBottom: 16,
-    gap: 8,
-  },
-  searchInput: {
+  list: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: '#DDD',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
-    color: '#000',
-  },
-  addButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    justifyContent: 'center',
-    minWidth: 80,
-  },
-  addButtonDisabled: {
-    backgroundColor: '#CCC',
-  },
-  addButtonText: {
-    color: '#FFF',
-    fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'center',
+    marginBottom: 20,
   },
   divider: {
     height: 1,
-    backgroundColor: '#DDD',
-    marginBottom: 16,
+    backgroundColor: '#E5E5E5', // Light grey like design
+    marginBottom: 20, // Exact spacing like design
+  },
+  searchSection: {
+    flexDirection: 'row',
+    marginBottom: 30, // Exact spacing like design
+    gap: 12,
+  },
+  searchInput: {
+    flex: 1,
+    borderWidth: 0, // No border like design
+    fontSize: 17, // Exact font size like design
+    color: '#000000',
+    paddingVertical: 12,
+    // No background, no border like design
+  },
+  addButton: {
+    backgroundColor: 'transparent', // Transparent like design
+    paddingHorizontal: 0,
+    paddingVertical: 12,
+    justifyContent: 'center',
+  },
+  addButtonDisabled: {
+    opacity: 0.5,
+  },
+  addButtonText: {
+    color: '#007AFF', // Blue color like design
+    fontSize: 17, // Exact font size like design
+    fontWeight: '400', // Regular weight like design
   },
   emptyText: {
     textAlign: 'center',
-    color: '#666',
-    fontSize: 16,
+    color: '#666666',
+    fontSize: 17,
     marginTop: 40,
+    fontStyle: 'italic',
   },
 });
 
