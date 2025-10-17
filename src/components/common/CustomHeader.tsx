@@ -1,41 +1,83 @@
-import React from "react";
-import { View, Text, StyleSheet, Dimensions } from "react-native";
+import React from 'react';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { IconButton } from 'react-native-paper';
 
 interface CustomHeaderProps {
   title: string;
+  showBackButton?: boolean;
+  onBackPress?: () => void;
 }
 
-const { width } = Dimensions.get("window");
+const { width } = Dimensions.get('window');
 
 /**
- * CustomHeader - Blue header matching exact specifications
- * Width: 360px, Height: 150px, Color: #2388C7
+ * CustomHeader - Blue header with back button support
  */
-const CustomHeader: React.FC<CustomHeaderProps> = ({ title }) => {
+const CustomHeader: React.FC<CustomHeaderProps> = ({ 
+  title, 
+  showBackButton = false, 
+  onBackPress 
+}) => {
   return (
     <View style={styles.header}>
-      <Text style={styles.title}>{title}</Text>
+      {/* Back Button - Top Left */}
+      {showBackButton && (
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={onBackPress}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <IconButton
+            icon="arrow-left"
+            iconColor="#FFFFFF"
+            size={24}
+            style={styles.backIcon}
+          />
+        </TouchableOpacity>
+      )}
+      
+      {/* Title */}
+      <View style={[
+        styles.titleContainer,
+        showBackButton && styles.titleContainerWithBackButton
+      ]}>
+        <Text style={styles.title}>{title}</Text>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   header: {
-    width: "100%", // Exact width from specs
-    height: 150, // Exact height from specs
-    backgroundColor: "#2388C7", // Exact color from specs
-    justifyContent: "flex-end",
-    alignItems: "flex-start",
-    paddingHorizontal: 24,
+    width: '100%',
+    height: 150,
+    backgroundColor: '#2388C7',
+    justifyContent: 'flex-end',
+    alignItems: 'flex-start',
+    paddingHorizontal: 16,
     paddingBottom: 16,
-    // Center the header on wider screens
-    alignSelf: "center",
-    marginHorizontal: width > 360 ? (width - 360) / 2 : 0,
+    position: 'relative',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 50, // Position below status bar
+    left: 16,
+    zIndex: 10,
+  },
+  backIcon: {
+    margin: 0,
+    backgroundColor: 'transparent',
+  },
+  titleContainer: {
+    width: '100%',
+  },
+  titleContainerWithBackButton: {
+    paddingLeft: 40, // Make space for back button
   },
   title: {
-    color: "#FFFFFF",
+    color: '#FFFFFF',
     fontSize: 34,
-    fontWeight: "700",
+    fontWeight: '700',
     lineHeight: 41,
   },
 });

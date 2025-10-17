@@ -22,28 +22,42 @@ export default function App() {
     <PaperProvider>
       <NavigationContainer>
         <StatusBar style="light" />
-        <Stack.Navigator
+        <Stack.Navigator 
           initialRouteName="Cities"
           screenOptions={{
-            header: ({ route, options }) => (
-              <CustomHeader title={options.title || route.name} />
+            // Use custom header for all screens
+            header: ({ route, options, navigation }) => (
+              <CustomHeader 
+                title={options.title || route.name} 
+                showBackButton={route.name !== 'Cities'}
+                onBackPress={navigation.goBack}
+              />
             ),
           }}
         >
-          <Stack.Screen
-            name="Cities"
+          <Stack.Screen 
+            name="Cities" 
             component={CitiesScreen}
-            options={{ title: "Cities" }}
+            options={{ 
+              title: 'Cities',
+              headerShown: true,
+            }}
           />
-          <Stack.Screen
-            name="CityDetail"
+          <Stack.Screen 
+            name="CityDetail" 
             component={CityDetailScreen}
-            options={{ title: "City Details" }}
+            options={{ 
+              title: 'City Details',
+              headerShown: true,
+            }}
           />
-          <Stack.Screen
-            name="HistoricalData"
+          <Stack.Screen 
+            name="HistoricalData" 
             component={HistoricalDataScreen}
-            options={{ title: "Historical Data" }}
+            options={{ 
+              title: 'Historical Data',
+              headerShown: true,
+            }}
           />
         </Stack.Navigator>
       </NavigationContainer>
