@@ -175,7 +175,7 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
         <View style={styles.cityContent}>
           <View style={styles.cityTextContainer}>
             <Image
-              source={require("../../assets/cityB.png")} // Replace with your image path
+              source={require("../../../assets/cityB.png")} // Replace with your image path
               style={styles.image}
             />
             <Text
@@ -194,7 +194,7 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
             style={styles.container}
           >
             <Image
-              source={require("../../assets/info.png")} // Replace with your image path
+              source={require("../../../assets/info.png")} // Replace with your image path
               style={styles.image}
             />
           </TouchableOpacity>
@@ -276,7 +276,7 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
               <TextInput.Icon
                 icon={() => (
                   <Image
-                    source={require("../../assets/search.png")} // Replace with your image path
+                    source={require("../../../assets/search.png")} // Replace with your image path
                     style={styles.image}
                   />
                 )}
