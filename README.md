@@ -2,32 +2,17 @@
 
 A modern, cross-platform weather application built with React Native, TypeScript, and Expo. Features real-time weather data, historical weather tracking, and a clean, intuitive interface.
 
-## 📸 Screenshots
+## 🎥 Demo Video
 
 <div align="center">
-  
-### 🏠 Cities Management Screen
-<img src="screenshots/1.png" alt="Cities Screen" width="200"/>
-<p><em>Main screen showing saved cities with add/remove functionality</em></p>
 
-### 🌡️ Weather Details Screen
-<img src="screenshots/3.png" alt="Weather Details" width="200"/>
-<p><em>Detailed weather information with current conditions and metrics</em></p>
+### 📱 App Demo & Features
 
-### 📊 Historical Data Screen
-<img src="screenshots/4.png" alt="Historical Data" width="200"/>
-<p><em>Historical weather entries with timeline view</em></p>
+https://github.com/your-username/your-repo-name/assets/your-user-id/your-video-asset-id
 
-### ➕ Add City Modal
-<img src="screenshots/2.png" alt="Add City Modal" width="200"/>
-<p><em>Modal for adding new cities with validation</em></p>
-
-### 🔄 Show the details of the history
-<img src="screenshots/5.png" alt="Loading State" width="200"/>
-<p><em>SHistorical weather entries details</em></p>
+<p><em>Complete walkthrough of the Weather App showcasing all features and functionality</em></p>
 
 </div>
-
 
 ## ✨ Features
 
@@ -39,6 +24,7 @@ A modern, cross-platform weather application built with React Native, TypeScript
 - **🧪 Comprehensive Testing**: Full test coverage with Jest and React Testing Library
 
 ## 🏗️ Project Structure
+
 src/
 ├── components/
 │ ├── common/
@@ -62,7 +48,6 @@ src/
 ├── helpers/ # Helper functions
 └── constants/ # App constants
 
-
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -75,9 +60,12 @@ src/
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd WeatherApp
+
+   ```
 
 2. Install dependencies
 
@@ -85,18 +73,18 @@ bash
 npm install
 
 3. Set up environment variables
-Create a .env file in the root directory:
+   Create a .env file in the root directory:
 
 env
 OPENWEATHER_API_KEY=your_api_key_here
 
-
 4. Start the development server
 
 npm start
-# or
-expo start
 
+# or
+
+expo start
 
 Running on Devices
 iOS: Press i in the Expo terminal or scan QR code with Expo Go app
@@ -110,28 +98,30 @@ Test Structure
 The project follows a comprehensive testing strategy with organized file structure:
 
 ComponentName/
-├── index.tsx          # Main component
-├── types.ts           # TypeScript interfaces
-├── ComponentName.test.tsx      # Unit tests
-└── ComponentName.integration.test.tsx  # Integration tests
-
+├── index.tsx # Main component
+├── types.ts # TypeScript interfaces
+├── ComponentName.test.tsx # Unit tests
+└── ComponentName.integration.test.tsx # Integration tests
 
 Running Tests:
 
 # Run all tests
+
 npm test
 
 # Run specific test suites
+
 npm test -- --testPathPattern="CustomHeader"
 npm test -- --testPathPattern="CitiesScreen"
 npm test -- --testPathPattern="StorageService"
 
 # Run tests with coverage
+
 npm run test:coverage
 
 # Watch mode for development
-npm run test:watch
 
+npm run test:watch
 
 Test Categories
 Unit Tests: Test individual component logic and business rules
@@ -139,7 +129,6 @@ Unit Tests: Test individual component logic and business rules
 Integration Tests: Verify component interactions and data flow
 
 Type Safety Tests: Ensure TypeScript interfaces are correct
-
 
 🛠️ Technology Stack
 Core Technologies
@@ -151,15 +140,12 @@ Expo: Development platform and build tools
 
 React Navigation: Routing and navigation
 
-
 UI & Styling
 React Native Paper: Material Design component library
 
 StyleSheet: React Native styling
 
 Custom Design System: Consistent color scheme and typography
-
-
 
 Data Management
 AsyncStorage: Local data persistence
@@ -168,16 +154,12 @@ OpenWeatherMap API: Weather data provider
 
 Custom Storage Service: Data management abstraction
 
-
-
 Testing
 Jest: Testing framework
 
 React Testing Library: Component testing utilities
 
 @testing-library/jest-native: Custom Jest matchers
-
-
 
 📱 Screens
 CitiesScreen
@@ -189,9 +171,6 @@ Remove cities with confirmation
 
 Navigate to weather details or historical data
 
-
-
-
 CityDetailScreen
 Detailed current weather information
 
@@ -200,7 +179,6 @@ Support for both real-time and historical data
 Weather metrics (temperature, humidity, pressure, etc.)
 
 Historical data badge for past entries
-
 
 HistoricalDataScreen
 Timeline of historical weather entries
@@ -241,18 +219,15 @@ Multiple size options
 
 Accessibility support
 
-
-
-
 Service Architecture
 
 StorageService
 interface IStorageService {
-  getCities(): Promise<City[]>;
-  saveCity(city: City): Promise<City[]>;
-  removeCity(cityName: string): Promise<City[]>;
-  getHistoricalData(cityName: string): Promise<HistoricalEntry[]>;
-  saveWeatherData(cityName: string, weatherData: WeatherData): Promise<HistoricalEntry[]>;
+getCities(): Promise<City[]>;
+saveCity(city: City): Promise<City[]>;
+removeCity(cityName: string): Promise<City[]>;
+getHistoricalData(cityName: string): Promise<HistoricalEntry[]>;
+saveWeatherData(cityName: string, weatherData: WeatherData): Promise<HistoricalEntry[]>;
 }
 
 WeatherApi Service
@@ -283,7 +258,6 @@ Body: 16-17px, 400-600 weight
 
 Captions: 14px, 400 weight
 
-
 📊 API Integration
 OpenWeatherMap API
 The app uses OpenWeatherMap's Current Weather Data API:
@@ -309,7 +283,6 @@ Graceful fallbacks for get operations
 
 Explicit errors for save/remove operations
 
-
 API Errors
 Network failure handling
 
@@ -333,19 +306,21 @@ Data Limiting: Historical entries capped at 10 per city
 
 Memory Management: Proper cleanup of async operations
 
-
 📦 Building for Production
 
 Expo Build Commands:
+
 # Build for iOS
+
 expo build:ios
 
 # Build for Android
+
 expo build:android
 
 # Build for web
-expo build:web
 
+expo build:web
 
 Environment Setup
 Configure app.json with proper bundle identifiers
@@ -355,7 +330,6 @@ Set up signing certificates for iOS
 Configure Android keystore
 
 Update environment variables for production
-
 
 🤝 Contributing
 Development Workflow
@@ -369,8 +343,6 @@ Push to the branch (git push origin feature/amazing-feature)
 
 Open a Pull Request
 
-
-
 Code Standards
 TypeScript: Strict type checking enabled
 
@@ -383,7 +355,9 @@ Commit Messages: Conventional commits format
 🐛 Troubleshooting
 Common Issues
 AsyncStorage not working in tests:
+
 # Clear Jest cache
+
 npm test -- --clearCache
 
 # Ensure proper mocking in test files
@@ -416,10 +390,7 @@ React Native Paper for beautiful UI components
 
 Testing Library for robust testing utilities
 
-
 Built with ❤️ using React Native, TypeScript, and Expo:
-
-
 
 This comprehensive README covers:
 
@@ -437,6 +408,6 @@ This comprehensive README covers:
 ✅ **Building & Deployment** - Production build instructions  
 ✅ **Contributing** - Development workflow and standards  
 ✅ **Troubleshooting** - Common issues and solutions  
-✅ **License & Acknowledgments** - Project credits  
+✅ **License & Acknowledgments** - Project credits
 
 The README provides everything a developer needs to understand, set up, develop, test, and maintain the Weather App project! 🚀
