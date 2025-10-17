@@ -15,6 +15,7 @@ import {
   Modal,
   Portal,
   TextInput,
+  FAB,
 } from 'react-native-paper';
 import { City } from '../services/types';
 import { storageService } from '../services/storage';
@@ -27,8 +28,7 @@ interface CitiesScreenProps {
 }
 
 /**
- * CitiesScreen - Exact replica of the design screenshot
- * Clean, minimal design with no visible search input
+ * CitiesScreen - With round blue FAB button on the right
  */
 const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
   const [cities, setCities] = useState<City[]>([]);
@@ -173,35 +173,41 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* Main Title - Exact match to screenshot */}
+      {/* Custom Header */}
+     
+      {/* Content */}
+      <View style={styles.content}>
+        {/* Cities List */}
+        <FlatList
+          data={cities}
+          renderItem={renderCityItem}
+          keyExtractor={(item) => `${item.name}-${item.country}`}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>
+                No cities added yet
+              </Text>
+            </View>
+          }
+          style={styles.list}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+        />
 
+        {/* Divider Line - Only show if there are cities */}
+        {cities.length > 0 && (
+          <Divider style={styles.divider} />
+        )}
+      </View>
 
-      {/* Cities List - Plain text with dashes exactly like screenshot */}
-      <FlatList
-        data={cities}
-        renderItem={renderCityItem}
-        keyExtractor={(item) => `${item.name}-${item.country}`}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              No cities added yet
-            </Text>
-          </View>
-        }
-        style={styles.list}
-        showsVerticalScrollIndicator={false}
-      />
-
-      {/* Divider Line - Exact match to screenshot */}
-      <Divider style={styles.divider} />
-
-      {/* Add City Button - Plain text exactly like screenshot */}
-      <TouchableOpacity 
-        style={styles.addCityButton}
+      {/* Floating Action Button - Round blue button on the right */}
+      <FAB
+        icon="plus"
+        style={styles.fab}
+        color="#FFFFFF"
         onPress={() => setAddModalVisible(true)}
-      >
-        <Text style={styles.addCityText}>+ Add city</Text>
-      </TouchableOpacity>
+        customSize={56} // Standard FAB size
+      />
 
       {/* Add City Modal */}
       <Portal>
@@ -262,8 +268,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+  },
+  header: {
+    width: '100%',
+    height: 150,
+    backgroundColor: '#2388C7',
+    justifyContent: 'flex-end',
+    alignItems: 'flex-start',
     paddingHorizontal: 24,
-    paddingTop: 60,
+    paddingBottom: 16,
+  },
+  headerTitle: {
+    color: '#FFFFFF',
+    fontSize: 34,
+    fontWeight: '700',
+    lineHeight: 41,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
   },
   loadingContainer: {
     flex: 1,
@@ -276,15 +299,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666666',
   },
-  mainTitle: {
-    fontSize: 34,
-    fontWeight: '700',
-    color: '#000000',
-    marginBottom: 30,
-  },
   list: {
     flex: 1,
-    marginBottom: 20,
+  },
+  listContent: {
+    flexGrow: 1,
+    paddingTop: 20,
   },
   cityItem: {
     flexDirection: 'row',
@@ -338,14 +358,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5E5E5',
     marginBottom: 20,
   },
-  addCityButton: {
-    paddingVertical: 12,
-    alignItems: 'flex-start',
-  },
-  addCityText: {
-    fontSize: 17,
-    color: '#007AFF',
-    fontWeight: '400',
+  // FAB Styles - Round blue button on the right
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#2388C7', // Exact color from specs
   },
   // Modal styles
   modalContainer: {
@@ -372,7 +391,7 @@ const styles = StyleSheet.create({
     borderColor: '#C6C6C8',
   },
   addButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#2388C7', // Same blue as FAB
   },
 });
 
