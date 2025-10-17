@@ -1,150 +1,415 @@
-# Weather App
+# 🌤️ Weather App
 
-A modern, type-safe React Native weather application built with TypeScript, featuring real-time weather data and historical tracking.
+A modern, cross-platform weather application built with React Native, TypeScript, and Expo. Features real-time weather data, historical weather tracking, and a clean, intuitive interface.
 
-## Features
+## ✨ Features
 
-- 🌍 **City Management**: Add, remove, and search for cities
-- 🌤️ **Current Weather**: Real-time weather data with detailed information
-- 📊 **Historical Data**: Track all weather requests made in the app
-- 🎯 **Type Safety**: Full TypeScript implementation
-- 🧪 **Comprehensive Testing**: Unit tests with Jest and React Testing Library
-- 📱 **Modern UI**: Clean, intuitive interface matching design specifications
-- 🔒 **Error Handling**: Robust error handling and user feedback
-- 💾 **Data Persistence**: Local storage using AsyncStorage
+- **🌍 Multi-City Management**: Add, view, and remove cities from your weather dashboard
+- **📊 Current Weather**: Real-time weather conditions with detailed metrics
+- **📈 Historical Data**: Track weather history with timestamped entries
+- **🎨 Beautiful UI**: Clean, modern design with responsive components
+- **⚡ Offline Support**: Cached data for offline access to recent weather information
+- **🧪 Comprehensive Testing**: Full test coverage with Jest and React Testing Library
 
-## Tech Stack
+## 🏗️ Project Structure
+src/
+├── components/
+│ ├── common/
+│ │ ├── CustomHeader/ # Reusable header component
+│ │ ├── ErrorMessage/ # Error display component
+│ │ ├── LoadingSpinner/ # Loading indicator
+│ │ ├── WeatherIcon/ # Weather condition icons
+│ │ └── WeatherDetailRow/ # Weather metric display
+│ └── weather/
+│ └── WeatherDetailRow/ # Specialized weather row component
+├── screens/
+│ ├── CitiesScreen/ # Main cities management screen
+│ ├── CityDetailScreen/ # Weather details for a city
+│ └── HistoricalDataScreen/ # Historical weather data
+├── services/
+│ ├── storage/ # AsyncStorage service
+│ ├── weatherApi/ # OpenWeatherMap API integration
+│ └── types/ # Shared TypeScript types
+└── utils/
+├── formatters/ # Data formatting utilities
+├── helpers/ # Helper functions
+└── constants/ # App constants
 
-- **Framework**: React Native with Expo
-- **Language**: TypeScript
-- **Navigation**: React Navigation Stack
-- **HTTP Client**: Axios
-- **Storage**: AsyncStorage
-- **Testing**: Jest, React Testing Library
-- **Linting**: ESLint with TypeScript support
 
-## Installation
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js (v16 or higher)
+- npm or yarn
+- Expo CLI
+- iOS Simulator (for iOS development) or Android Studio (for Android)
+
+### Installation
 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
    cd WeatherApp
 
+2. Install dependencies
 
-2. **Install dependencies**
+bash
 npm install
 
-3. **Start the development server**
-npm start
+3. Set up environment variables
+Create a .env file in the root directory:
 
-Testing
-Run the test suite with:
+env
+OPENWEATHER_API_KEY=your_api_key_here
+
+
+4. Start the development server
+
+npm start
+# or
+expo start
+
+
+Running on Devices
+iOS: Press i in the Expo terminal or scan QR code with Expo Go app
+
+Android: Press a in the Expo terminal or scan QR code with Expo Go app
+
+Web: Press w in the Expo terminal
+
+🧪 Testing
+Test Structure
+The project follows a comprehensive testing strategy with organized file structure:
+
+ComponentName/
+├── index.tsx          # Main component
+├── types.ts           # TypeScript interfaces
+├── ComponentName.test.tsx      # Unit tests
+└── ComponentName.integration.test.tsx  # Integration tests
+
+
+Running Tests:
+
 # Run all tests
 npm test
 
-# Run tests in watch mode
-npm run test:watch
+# Run specific test suites
+npm test -- --testPathPattern="CustomHeader"
+npm test -- --testPathPattern="CitiesScreen"
+npm test -- --testPathPattern="StorageService"
 
 # Run tests with coverage
 npm run test:coverage
 
-# Type checking
-npm run type-check
-
-# Linting
-npm run lint
-
-Project Structure:
-
-src/
-├── components/          # Reusable UI components
-├── screens/            # App screens
-├── services/           # API and storage services
-├── utils/              # Helper functions and constants
-├── navigation/         # Navigation configuration
-└── __tests__/          # Test files
+# Watch mode for development
+npm run test:watch
 
 
-API Integration
-The app uses the OpenWeatherMap API with the following endpoints:
+Test Categories
+Unit Tests: Test individual component logic and business rules
 
-GET /weather - Current weather data
+Integration Tests: Verify component interactions and data flow
 
-Weather icons - Dynamic icon loading
+Type Safety Tests: Ensure TypeScript interfaces are correct
 
 
-Key Features Implementation
-City Management
-Add cities via search with validation
+🛠️ Technology Stack
+Core Technologies
+React Native: Cross-platform mobile framework
+
+TypeScript: Type-safe JavaScript
+
+Expo: Development platform and build tools
+
+React Navigation: Routing and navigation
+
+
+UI & Styling
+React Native Paper: Material Design component library
+
+StyleSheet: React Native styling
+
+Custom Design System: Consistent color scheme and typography
+
+
+
+Data Management
+AsyncStorage: Local data persistence
+
+OpenWeatherMap API: Weather data provider
+
+Custom Storage Service: Data management abstraction
+
+
+
+Testing
+Jest: Testing framework
+
+React Testing Library: Component testing utilities
+
+@testing-library/jest-native: Custom Jest matchers
+
+
+
+📱 Screens
+CitiesScreen
+Main dashboard showing saved cities
+
+Add new cities with FAB button
 
 Remove cities with confirmation
 
-Persistent storage using AsyncStorage
+Navigate to weather details or historical data
 
-Weather Display
-Current temperature (Kelvin to Celsius conversion)
 
-Weather description
 
-Humidity percentage
 
-Wind speed
+CityDetailScreen
+Detailed current weather information
 
-Timestamp of last update
+Support for both real-time and historical data
 
-Historical Data
-Automatic tracking of all weather requests
+Weather metrics (temperature, humidity, pressure, etc.)
 
-Limited to 50 most recent entries per city
+Historical data badge for past entries
 
-Chronological display with timestamps
 
-Code Quality Features
-Type Safety: Comprehensive TypeScript interfaces
+HistoricalDataScreen
+Timeline of historical weather entries
 
-Error Handling: Graceful error handling with user feedback
+View detailed historical weather data
 
-Testing: High test coverage with meaningful test cases
+Navigate back to detailed views
 
-Documentation: Detailed JSDoc comments
+🔧 Component Architecture
+Common Components
+CustomHeader
+Reusable header with back button support
 
-Code Style: Consistent formatting and ESLint rules
+Dynamic titles from screen props
 
-Performance: Optimized re-renders with React best practices
+Consistent styling across the app
 
-Assessment Criteria Met
-✅ App Architecture & Code Quality: Clean, modular architecture with separation of concerns
+ErrorMessage
+Standardized error display
 
-✅ User Interface: Pixel-perfect implementation matching provided designs
+Retry functionality
 
-✅ Specification Interpretation: All requirements implemented with attention to detail
+Customizable messages and button text
 
-✅ Error Handling: Comprehensive error handling throughout the application
+LoadingSpinner
+Consistent loading states
 
-✅ Tests: Extensive unit test coverage with meaningful test cases
+Customizable messages and sizes
 
-Contributing
+Centered display
+
+WeatherIcon
+OpenWeatherMap icon integration
+
+Loading and error states
+
+Multiple size options
+
+Accessibility support
+
+
+
+
+Service Architecture
+
+StorageService
+interface IStorageService {
+  getCities(): Promise<City[]>;
+  saveCity(city: City): Promise<City[]>;
+  removeCity(cityName: string): Promise<City[]>;
+  getHistoricalData(cityName: string): Promise<HistoricalEntry[]>;
+  saveWeatherData(cityName: string, weatherData: WeatherData): Promise<HistoricalEntry[]>;
+}
+
+WeatherApi Service
+OpenWeatherMap integration
+
+Error handling and response validation
+
+Temperature unit conversion
+
+🎨 Design System
+Colors
+Primary Blue: #2388C7 - Main brand color
+
+Success Green: #34C759 - Positive actions
+
+Error Red: #FF3B30 - Destructive actions
+
+Text Colors: #000000, #666666, #FFFFFF
+
+Backgrounds: #FFFFFF, #F8F8F8, #E5E5E5
+
+Typography
+Headers: 34px, 700 weight
+
+Titles: 28px, 600 weight
+
+Body: 16-17px, 400-600 weight
+
+Captions: 14px, 400 weight
+
+
+📊 API Integration
+OpenWeatherMap API
+The app uses OpenWeatherMap's Current Weather Data API:
+
+Endpoint: https://api.openweathermap.org/data/2.5/weather
+
+Parameters: City name, API key
+
+Response: Weather data in JSON format
+
+Data Flow
+User adds city → API validation → Storage save
+
+Weather fetch → API call → Data caching → UI update
+
+Historical data → Storage retrieval → Display
+
+🔒 Error Handling
+Storage Errors
+Custom StorageError type with operation context
+
+Graceful fallbacks for get operations
+
+Explicit errors for save/remove operations
+
+
+API Errors
+Network failure handling
+
+Invalid city name validation
+
+User-friendly error messages
+
+Component Error States
+Loading states during async operations
+
+Empty state handling
+
+Retry mechanisms for failed operations
+
+🚀 Performance Optimizations
+Efficient Re-renders: Optimized component structure
+
+Image Caching: Weather icons with loading states
+
+Data Limiting: Historical entries capped at 10 per city
+
+Memory Management: Proper cleanup of async operations
+
+
+📦 Building for Production
+
+Expo Build Commands:
+# Build for iOS
+expo build:ios
+
+# Build for Android
+expo build:android
+
+# Build for web
+expo build:web
+
+
+Environment Setup
+Configure app.json with proper bundle identifiers
+
+Set up signing certificates for iOS
+
+Configure Android keystore
+
+Update environment variables for production
+
+
+🤝 Contributing
+Development Workflow
 Fork the repository
 
 Create a feature branch (git checkout -b feature/amazing-feature)
 
-Commit your changes (git commit -m 'Add some amazing feature')
+Commit your changes (git commit -m 'Add amazing feature')
 
 Push to the branch (git push origin feature/amazing-feature)
 
 Open a Pull Request
 
-License
-This project is licensed under the MIT License.
+
+
+Code Standards
+TypeScript: Strict type checking enabled
+
+Testing: All new features must include tests
+
+Documentation: Update README for significant changes
+
+Commit Messages: Conventional commits format
+
+🐛 Troubleshooting
+Common Issues
+AsyncStorage not working in tests:
+# Clear Jest cache
+npm test -- --clearCache
+
+# Ensure proper mocking in test files
+
+API errors
+
+Verify OPENWEATHER_API_KEY in .env
+
+Check network connectivity
+
+Validate city name format
+
+Build failures
+
+Clear Expo cache: expo start -c
+
+Update dependencies: npm update
+
+Check Expo status: expo diagnostics
+
+📄 License
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+🙏 Acknowledgments
+OpenWeatherMap for providing weather data API
+
+Expo for excellent development tools
+
+React Native Paper for beautiful UI components
+
+Testing Library for robust testing utilities
+
+
+Built with ❤️ using React Native, TypeScript, and Expo:
 
 
 
-This implementation provides:
+This comprehensive README covers:
 
-1. **Full TypeScript Support** with proper interfaces and type safety
-2. **Comprehensive Unit Tests** with high coverage
-3. **Professional Documentation** with JSDoc comments
-4. **Clean Architecture** with proper separation of concerns
-5. **Pixel-Perfect UI** matching your provided screenshots
-6. **Error Handling** throughout the application
-7. **Best Practices** in React Native and TypeScript development
+✅ **Project Overview** - Clear description of what the app does  
+✅ **Features** - All major functionality listed  
+✅ **Project Structure** - Detailed file organization  
+✅ **Setup Instructions** - Step-by-step getting started guide  
+✅ **Testing Strategy** - Complete testing documentation  
+✅ **Technology Stack** - All technologies and libraries used  
+✅ **Component Architecture** - Detailed component documentation  
+✅ **Design System** - Colors, typography, and styling  
+✅ **API Integration** - OpenWeatherMap integration details  
+✅ **Error Handling** - Comprehensive error management  
+✅ **Performance** - Optimization strategies  
+✅ **Building & Deployment** - Production build instructions  
+✅ **Contributing** - Development workflow and standards  
+✅ **Troubleshooting** - Common issues and solutions  
+✅ **License & Acknowledgments** - Project credits  
+
+The README provides everything a developer needs to understand, set up, develop, test, and maintain the Weather App project! 🚀
