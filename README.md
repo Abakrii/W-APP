@@ -2,6 +2,33 @@
 
 A modern, cross-platform weather application built with React Native, TypeScript, and Expo. Features real-time weather data, historical weather tracking, and a clean, intuitive interface.
 
+## 📸 Screenshots
+
+<div align="center">
+  
+### 🏠 Cities Management Screen
+<img src="screenshots/1.png" alt="Cities Screen" width="200"/>
+<p><em>Main screen showing saved cities with add/remove functionality</em></p>
+
+### 🌡️ Weather Details Screen
+<img src="screenshots/2.png" alt="Weather Details" width="200"/>
+<p><em>Detailed weather information with current conditions and metrics</em></p>
+
+### 📊 Historical Data Screen
+<img src="screenshots/3.png" alt="Historical Data" width="200"/>
+<p><em>Historical weather entries with timeline view</em></p>
+
+### ➕ Add City Modal
+<img src="screenshots/4.png" alt="Add City Modal" width="200"/>
+<p><em>Modal for adding new cities with validation</em></p>
+
+### 🔄 Loading States
+<img src="screenshots/5.png" alt="Loading State" width="200"/>
+<p><em>Smooth loading indicators during data fetching</em></p>
+
+</div>
+
+
 ## ✨ Features
 
 - **🌍 Multi-City Management**: Add, view, and remove cities from your weather dashboard
