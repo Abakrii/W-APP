@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { RouteProp } from "@react-navigation/native";
-import { Text, Divider, ActivityIndicator } from "react-native-paper";
+import { 
+  Text, 
+  Modal, 
+  Portal,
+  Button,
+  Divider
+} from "react-native-paper";
 import { RootStackParamList } from "../../../App";
 import { WeatherData } from "../../services/types";
 import { weatherApi, kelvinToCelsius } from "../../services/weatherApi";
 import { storageService } from "../../services/storage";
 import { formatDate, capitalizeFirst } from "../../utils/formatters";
-import WeatherDetailRow from "../../components/weather/WeatherDetailRow";
 import WeatherIcon from "../../components/weather/WeatherIcon";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import { CityDetailScreenProps, WeatherDisplayData } from "./types";
 
 /**
- * CityDetailScreen - Now supports both current and historical weather data
+ * CityDetailScreen - Shows weather data in dialog with last updated text outside
  */
 const CityDetailScreen: React.FC<CityDetailScreenProps> = ({
   route,
@@ -23,16 +28,15 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({
   const [weatherData, setWeatherData] = useState<WeatherData | null>(
     historicalData || null
   );
-  const [loading, setLoading] = useState(!historicalData); // Only load if no historical data
+  const [loading, setLoading] = useState(!historicalData);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>("");
+  const [dialogVisible, setDialogVisible] = useState(true);
 
   useEffect(() => {
     if (historicalData && historicalTimestamp) {
-      // If we have historical data, use it directly
       setLastUpdated(formatDate(historicalTimestamp));
     } else {
-      // Otherwise fetch current data
       loadWeatherData();
     }
   }, [city, historicalData, historicalTimestamp]);
@@ -46,7 +50,6 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({
 
       if (result.success && result.data) {
         setWeatherData(result.data);
-
         await storageService.saveWeatherData(city.name, result.data);
 
         const now = new Date();
@@ -66,6 +69,13 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({
     loadWeatherData();
   };
 
+  const handleClose = () => {
+    setDialogVisible(false);
+    setTimeout(() => {
+      navigation.goBack();
+    }, 300);
+  };
+
   const getWeatherDisplayData = (): WeatherDisplayData | null => {
     if (!weatherData) return null;
 
@@ -83,150 +93,148 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({
     };
   };
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer} testID="loading-container">
-        <ActivityIndicator size="large" testID="loading-indicator" />
-        <Text style={styles.loadingText}>Loading weather data...</Text>
-      </View>
-    );
-  }
-
-  if (error && !weatherData) {
-    return (
-      <ErrorMessage
-        message={error}
-        onRetry={handleRetry}
-        retryButtonText="Retry"
-        testID="error-message"
-      />
-    );
-  }
-
-  if (!weatherData) {
-    return (
-      <View style={styles.centerContainer} testID="no-data-container">
-        <Text>No weather data available</Text>
-      </View>
-    );
-  }
-
-  const displayData = getWeatherDisplayData();
-  if (!displayData) {
-    return (
-      <View style={styles.centerContainer}>
-        <Text>Unable to process weather data</Text>
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.container} testID="city-detail-screen">
-      <ScrollView
-        style={styles.content}
-        contentContainerStyle={styles.contentContainer}
-        testID="weather-scrollview"
-      >
-        {/* City Name */}
-        <Text style={styles.cityTitle} testID="city-title">
-          {city.name}, {city.country}
-        </Text>
-
-        {/* Weather Icon and Basic Info */}
-        <View style={styles.weatherHeader} testID="weather-header">
-          <WeatherIcon
-            iconCode={displayData.iconCode}
-            description={displayData.description}
-            size="large"
-            showDescription={true}
-            testID="weather-icon"
-          />
-
-          <View
-            style={styles.temperatureContainer}
-            testID="temperature-container"
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <View style={styles.dialogContent}>
+          <Text style={styles.loadingText}>Loading weather data...</Text>
+          <Button 
+            mode="outlined" 
+            onPress={handleClose}
+            style={styles.closeButton}
           >
-            <Text style={styles.temperature} testID="temperature-text">
-              {displayData.temperature}°C
-            </Text>
-            <Text style={styles.weatherDescription} testID="description-text">
-              {displayData.description}
-            </Text>
-            {displayData.isHistoricalData && (
-              <Text style={styles.historicalBadge} testID="historical-badge">
-                Historical Data
-              </Text>
-            )}
-          </View>
+            Close
+          </Button>
         </View>
+      );
+    }
 
-        <Divider style={styles.sectionDivider} testID="section-divider" />
-
-        {/* Weather Details Table */}
-        <View style={styles.weatherCard} testID="weather-details-card">
-          <Text style={styles.detailsTitle} testID="details-title">
-            Weather Details
-          </Text>
-          <WeatherDetailRow
-            label="Description"
-            value={displayData.description}
-            testID="detail-description"
-          />
-          <WeatherDetailRow
-            label="Temperature"
-            value={`${displayData.temperature}° C`}
-            testID="detail-temperature"
-          />
-          <WeatherDetailRow
-            label="Feels Like"
-            value={`${displayData.feelsLike}° C`}
-            testID="detail-feels-like"
-          />
-          <WeatherDetailRow
-            label="Humidity"
-            value={`${displayData.humidity}%`}
-            testID="detail-humidity"
-          />
-          <WeatherDetailRow
-            label="Windspeed"
-            value={`${displayData.windSpeed} km/h`}
-            testID="detail-windspeed"
-          />
-          <WeatherDetailRow
-            label="Pressure"
-            value={`${displayData.pressure} hPa`}
-            testID="detail-pressure"
-          />
-        </View>
-
-        {/* Last Updated / Historical Timestamp */}
-        {lastUpdated && (
-          <View
-            style={styles.lastUpdatedContainer}
-            testID="last-updated-container"
-          >
-            <Text style={styles.lastUpdated} testID="last-updated-text">
-              {displayData.isHistoricalData
-                ? `Historical weather data for ${
-                    city.name
-                  } recorded on\n${lastUpdated.replace(" - ", " - ")}`
-                : `Weather information for ${
-                    city.name
-                  } received on\n${lastUpdated.replace(" - ", " - ")}`}
-            </Text>
-          </View>
-        )}
-
-        {/* Only show refresh for current data */}
-        {error && weatherData && !displayData.isHistoricalData && (
+    if (error && !weatherData) {
+      return (
+        <View style={styles.dialogContent}>
           <ErrorMessage
             message={error}
             onRetry={handleRetry}
-            retryButtonText="Refresh Data"
-            testID="refresh-error-message"
+            retryButtonText="Retry"
           />
-        )}
-      </ScrollView>
+          <Button 
+            mode="outlined" 
+            onPress={handleClose}
+            style={styles.closeButton}
+          >
+            Close
+          </Button>
+        </View>
+      );
+    }
+
+    if (!weatherData) {
+      return (
+        <View style={styles.dialogContent}>
+          <Text style={styles.noDataText}>No weather data available</Text>
+          <Button 
+            mode="outlined" 
+            onPress={handleClose}
+            style={styles.closeButton}
+          >
+            Close
+          </Button>
+        </View>
+      );
+    }
+
+    const displayData = getWeatherDisplayData();
+    if (!displayData) {
+      return (
+        <View style={styles.dialogContent}>
+          <Text style={styles.noDataText}>Unable to process weather data</Text>
+          <Button 
+            mode="outlined" 
+            onPress={handleClose}
+            style={styles.closeButton}
+          >
+            Close
+          </Button>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.dialogContent}>
+        {/* City Title */}
+        <Text style={styles.cityTitle}>
+          {city.name}, {city.country}
+        </Text>
+
+        {/* Weather Icon */}
+        <WeatherIcon
+          iconCode={displayData.iconCode}
+          description={displayData.description}
+          size="large"
+          showDescription={false}
+          style={styles.weatherIcon}
+        />
+
+        <Divider style={styles.titleDivider} />
+
+        {/* Weather Details Table */}
+        <View style={styles.detailsTable}>
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>Description</Text>
+            <Text style={styles.value}>{displayData.description}</Text>
+          </View>
+          
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>Temperature</Text>
+            <Text style={styles.value}>{displayData.temperature}° C</Text>
+          </View>
+          
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>Humidity</Text>
+            <Text style={styles.value}>{displayData.humidity}%</Text>
+          </View>
+          
+          <View style={styles.tableRow}>
+            <Text style={styles.label}>Windspeed</Text>
+            <Text style={styles.value}>{displayData.windSpeed} km/h</Text>
+          </View>
+        </View>
+
+        {/* Close Button */}
+        <Button 
+          mode="contained" 
+          onPress={handleClose}
+          style={styles.closeButton}
+          labelStyle={styles.closeButtonLabel}
+        >
+          Close
+        </Button>
+      </View>
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      {/* Last Updated Text - Outside the dialog */}
+      {lastUpdated && weatherData && (
+        <View style={styles.lastUpdatedContainer}>
+          <Text style={styles.lastUpdatedText}>
+            Weather information for {city.name} received on{"\n"}
+            {lastUpdated}
+          </Text>
+        </View>
+      )}
+
+      {/* Dialog with weather data */}
+      <Portal>
+        <Modal
+          visible={dialogVisible}
+          onDismiss={handleClose}
+          contentContainerStyle={styles.dialogContainer}
+        >
+          {renderContent()}
+        </Modal>
+      </Portal>
     </View>
   );
 };
@@ -235,112 +243,115 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
-  },
-  header: {
-    width: "100%",
-    height: 150,
-    backgroundColor: "#2388C7",
-    justifyContent: "flex-end",
-    alignItems: "flex-start",
-    paddingHorizontal: 24,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    color: "#FFFFFF",
-    fontSize: 34,
-    fontWeight: "700",
-    lineHeight: 41,
-  },
-  content: {
-    flex: 1,
-  },
-  contentContainer: {
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 30,
-  },
-  loadingContainer: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
   },
-  loadingText: {
-    marginTop: 8,
-    color: "#666",
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: "center",
+  // Last Updated Text Styles (Outside dialog)
+  lastUpdatedContainer: {
+    position: "absolute",
+    bottom: 40,
+    left: 20,
+    right: 20,
+    backgroundColor: "#F8F8F8",
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 8,
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
+  },
+  lastUpdatedText: {
+    fontSize: 14,
+    color: "#666666",
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  // Dialog Styles
+  dialogContainer: {
+    backgroundColor: "white",
+    margin: 24,
+    borderRadius: 8,
+    overflow: "hidden",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  dialogContent: {
+    padding: 0,
+    alignItems: "center",
   },
   cityTitle: {
-    fontSize: 28,
-    fontWeight: "600",
-    color: "#000000",
-    marginBottom: 24,
-    textAlign: "center",
-  },
-  weatherHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 24,
-    paddingHorizontal: 20,
-  },
-  temperatureContainer: {
-    alignItems: "flex-end",
-  },
-  temperature: {
-    fontSize: 48,
-    fontWeight: "300",
-    color: "#000000",
-    marginBottom: 4,
-  },
-  weatherDescription: {
-    fontSize: 16,
-    color: "#666666",
-    textAlign: "right",
-    marginBottom: 4,
-  },
-  historicalBadge: {
-    fontSize: 12,
-    color: "#2388C7",
-    fontWeight: "600",
-    backgroundColor: "#E3F2FD",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-    overflow: "hidden",
-  },
-  sectionDivider: {
-    marginVertical: 16,
-    backgroundColor: "#E5E5E5",
-  },
-  weatherCard: {
-    backgroundColor: "#F8F8F8",
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 24,
-  },
-  detailsTitle: {
     fontSize: 20,
     fontWeight: "600",
     color: "#000000",
-    marginBottom: 16,
-  },
-  lastUpdatedContainer: {
-    backgroundColor: "#F8F8F8",
-    borderRadius: 8,
-    padding: 16,
-  },
-  lastUpdated: {
     textAlign: "center",
-    color: "#666666",
-    fontSize: 14,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    backgroundColor: "#FFFFFF",
+  },
+  weatherIcon: {
+    marginVertical: 10,
+  },
+  titleDivider: {
+    height: 1,
+    backgroundColor: "#E5E5E5",
+    width: "100%",
+    marginVertical: 10,
+  },
+  detailsTable: {
+    width: "100%",
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+  },
+  tableRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F0",
+  },
+  label: {
+    fontSize: 16,
+    color: "#000000",
     fontWeight: "400",
-    lineHeight: 20,
+    flex: 1,
+  },
+  value: {
+    fontSize: 16,
+    color: "#2388C7",
+    fontWeight: "400",
+    textAlign: "right",
+    flex: 1,
+  },
+  closeButton: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+    marginTop: 8,
+    backgroundColor: "#2388C7",
+    borderRadius: 4,
+    paddingVertical: 8,
+    minWidth: 100,
+  },
+  closeButtonLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#FFFFFF",
+  },
+  loadingText: {
+    fontSize: 16,
+    color: "#666666",
+    textAlign: "center",
+    marginVertical: 20,
+  },
+  noDataText: {
+    fontSize: 16,
+    color: "#666666",
+    textAlign: "center",
+    marginVertical: 20,
   },
 });
 
