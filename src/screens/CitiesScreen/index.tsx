@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { View, StyleSheet, FlatList, Animated } from "react-native";
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  Animated,
+  TouchableOpacity,
+  Image,
+} from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   Text,
@@ -179,17 +186,15 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
         </View>
 
         <View style={styles.actions} testID={`actions-${item.name}`}>
-          <Button
-            mode="contained"
-            buttonColor="#34C759"
-            textColor="#FFFFFF"
-            style={styles.historyButton}
+          <TouchableOpacity
             onPress={() => handleHistoryPress(item)}
-            compact
-            testID={`history-button-${item.name}`}
+            style={styles.container}
           >
-            History
-          </Button>
+            <Image
+              source={require("../../assets/info.png")} // Replace with your image path
+              style={styles.image}
+            />
+          </TouchableOpacity>
         </View>
       </View>
     </Swipeable>
@@ -360,7 +365,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   actions: {
-    flexDirection: "row",
     alignItems: "center",
     gap: 8,
   },
@@ -439,6 +443,9 @@ const styles = StyleSheet.create({
   },
   addButton: {
     backgroundColor: "#2388C7",
+  },
+  image: {
+    resizeMode: "contain", // Or 'cover', 'stretch', etc.
   },
 });
 
