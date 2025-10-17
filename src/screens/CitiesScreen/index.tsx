@@ -1,11 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-} from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import React, { useState, useEffect, useCallback } from "react";
+import { View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   Text,
   Button,
@@ -16,16 +11,13 @@ import {
   Portal,
   TextInput,
   FAB,
-} from 'react-native-paper';
-import { City } from '../services/types';
-import { storageService } from '../services/storage';
-import { weatherApi } from '../services/weatherApi';
-import { validateCityName } from '../utils/helpers';
-import { capitalizeFirst } from '../utils/formatters';
-
-interface CitiesScreenProps {
-  navigation: any;
-}
+} from "react-native-paper";
+import { City } from "../../services/types";
+import { storageService } from "../../services/storage";
+import { weatherApi } from "../../services/weatherApi";
+import { validateCityName } from "../../utils/helpers";
+import { capitalizeFirst } from "../../utils/formatters";
+import { CitiesScreenProps } from "./types";
 
 /**
  * CitiesScreen - With round blue FAB button on the right
@@ -34,9 +26,9 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
   const [cities, setCities] = useState<City[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarMessage, setSnackbarMessage] = useState("");
   const [addModalVisible, setAddModalVisible] = useState(false);
-  const [newCityName, setNewCityName] = useState('');
+  const [newCityName, setNewCityName] = useState("");
   const [isAdding, setIsAdding] = useState(false);
 
   useFocusEffect(
@@ -51,8 +43,8 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
       const savedCities = await storageService.getCities();
       setCities(savedCities);
     } catch (err) {
-      showSnackbar('Failed to load cities');
-      console.error('Error loading cities:', err);
+      showSnackbar("Failed to load cities");
+      console.error("Error loading cities:", err);
     } finally {
       setIsLoading(false);
     }
@@ -65,41 +57,41 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
 
   const handleAddCity = async () => {
     if (!newCityName.trim()) {
-      showSnackbar('Please enter a city name');
+      showSnackbar("Please enter a city name");
       return;
     }
 
     const validation = validateCityName(newCityName);
     if (!validation.isValid) {
-      showSnackbar(validation.error || 'Invalid city name');
+      showSnackbar(validation.error || "Invalid city name");
       return;
     }
 
     setIsAdding(true);
-    
+
     try {
       const formattedCityName = capitalizeFirst(newCityName.trim());
       const result = await weatherApi.getCurrentWeather(formattedCityName);
-      
+
       if (result.success && result.data) {
         const cityData: City = {
           name: result.data.name,
           country: result.data.sys.country,
         };
-        
+
         const updatedCities = await storageService.saveCity(cityData);
         setCities(updatedCities);
-        setNewCityName('');
+        setNewCityName("");
         setAddModalVisible(false);
-        
+
         await storageService.saveWeatherData(cityData.name, result.data);
         showSnackbar(`${cityData.name} added successfully`);
       } else {
-        showSnackbar(result.error || 'City not found');
+        showSnackbar(result.error || "City not found");
       }
     } catch (err) {
-      showSnackbar('Failed to add city');
-      console.error('Error adding city:', err);
+      showSnackbar("Failed to add city");
+      console.error("Error adding city:", err);
     } finally {
       setIsAdding(false);
     }
@@ -111,31 +103,32 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
       setCities(updatedCities);
       showSnackbar(`${cityName} removed`);
     } catch (err) {
-      showSnackbar('Failed to remove city');
-      console.error('Error removing city:', err);
+      showSnackbar("Failed to remove city");
+      console.error("Error removing city:", err);
     }
   };
 
   const handleCityPress = (city: City) => {
-    navigation.navigate('CityDetail', { city });
+    navigation.navigate("CityDetail", { city });
   };
 
   const handleHistoryPress = (city: City) => {
-    navigation.navigate('HistoricalData', { city });
+    navigation.navigate("HistoricalData", { city });
   };
 
   const renderCityItem = ({ item }: { item: City }) => (
-    <View style={styles.cityItem}>
-      <TouchableOpacity 
+    <View style={styles.cityItem} testID={`city-item-${item.name}`}>
+      <TouchableOpacity
         style={styles.cityContent}
         onPress={() => handleCityPress(item)}
+        testID={`city-press-${item.name}`}
       >
         <Text style={styles.dash}>-</Text>
         <Text style={styles.cityText}>
           {item.name}, {item.country}
         </Text>
       </TouchableOpacity>
-      <View style={styles.actions}>
+      <View style={styles.actions} testID={`actions-${item.name}`}>
         <Button
           mode="contained"
           buttonColor="#34C759"
@@ -143,6 +136,7 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
           style={styles.historyButton}
           onPress={() => handleHistoryPress(item)}
           compact
+          testID={`history-button-${item.name}`}
         >
           History
         </Button>
@@ -153,6 +147,7 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
           style={styles.removeButton}
           onPress={() => handleRemoveCity(item.name)}
           compact
+          testID={`remove-button-${item.name}`}
         >
           Remove
         </Button>
@@ -162,19 +157,15 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" />
-        <Text style={styles.loadingText}>
-          Loading cities...
-        </Text>
+      <View style={styles.loadingContainer} testID="loading-container">
+        <ActivityIndicator size="large" testID="loading-indicator" />
+        <Text style={styles.loadingText}>Loading cities...</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      {/* Custom Header */}
-     
+    <View style={styles.container} testID="cities-screen">
       {/* Content */}
       <View style={styles.content}>
         {/* Cities List */}
@@ -183,20 +174,19 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
           renderItem={renderCityItem}
           keyExtractor={(item) => `${item.name}-${item.country}`}
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>
-                No cities added yet
-              </Text>
+            <View style={styles.emptyContainer} testID="empty-container">
+              <Text style={styles.emptyText}>No cities added yet</Text>
             </View>
           }
           style={styles.list}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
+          testID="cities-list"
         />
 
         {/* Divider Line - Only show if there are cities */}
         {cities.length > 0 && (
-          <Divider style={styles.divider} />
+          <Divider style={styles.divider} testID="divider" />
         )}
       </View>
 
@@ -206,7 +196,8 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
         style={styles.fab}
         color="#FFFFFF"
         onPress={() => setAddModalVisible(true)}
-        customSize={56} // Standard FAB size
+        customSize={56}
+        testID="add-city-fab"
       />
 
       {/* Add City Modal */}
@@ -215,6 +206,7 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
           visible={addModalVisible}
           onDismiss={() => setAddModalVisible(false)}
           contentContainerStyle={styles.modalContainer}
+          testID="add-city-modal"
         >
           <Text style={styles.modalTitle}>Add New City</Text>
           <TextInput
@@ -226,12 +218,14 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
             returnKeyType="done"
             style={styles.modalInput}
             autoFocus
+            testID="city-name-input"
           />
           <View style={styles.modalActions}>
             <Button
               mode="outlined"
               onPress={() => setAddModalVisible(false)}
               style={styles.cancelButton}
+              testID="cancel-button"
             >
               Cancel
             </Button>
@@ -241,6 +235,7 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
               loading={isAdding}
               disabled={isAdding}
               style={styles.addButton}
+              testID="add-city-button"
             >
               Add City
             </Button>
@@ -254,9 +249,10 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
         onDismiss={() => setSnackbarVisible(false)}
         duration={3000}
         action={{
-          label: 'OK',
+          label: "OK",
           onPress: () => setSnackbarVisible(false),
         }}
+        testID="snackbar"
       >
         {snackbarMessage}
       </Snackbar>
@@ -267,21 +263,21 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
   },
   header: {
-    width: '100%',
+    width: "100%",
     height: 150,
-    backgroundColor: '#2388C7',
-    justifyContent: 'flex-end',
-    alignItems: 'flex-start',
+    backgroundColor: "#2388C7",
+    justifyContent: "flex-end",
+    alignItems: "flex-start",
     paddingHorizontal: 24,
     paddingBottom: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 34,
-    fontWeight: '700',
+    fontWeight: "700",
     lineHeight: 41,
   },
   content: {
@@ -290,14 +286,14 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#666666',
+    color: "#666666",
   },
   list: {
     flex: 1,
@@ -307,33 +303,33 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   cityItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 0,
   },
   cityContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
   },
   dash: {
     fontSize: 17,
-    color: '#000000',
-    fontWeight: '400',
+    color: "#000000",
+    fontWeight: "400",
     marginRight: 8,
     width: 10,
   },
   cityText: {
     fontSize: 17,
-    color: '#000000',
-    fontWeight: '400',
+    color: "#000000",
+    fontWeight: "400",
     flex: 1,
   },
   actions: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   historyButton: {
@@ -344,54 +340,54 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingVertical: 40,
   },
   emptyText: {
     fontSize: 17,
-    color: '#666666',
-    fontStyle: 'italic',
+    color: "#666666",
+    fontStyle: "italic",
   },
   divider: {
     height: 1,
-    backgroundColor: '#E5E5E5',
+    backgroundColor: "#E5E5E5",
     marginBottom: 20,
   },
   // FAB Styles - Round blue button on the right
   fab: {
-    position: 'absolute',
+    position: "absolute",
     margin: 16,
     right: 0,
     bottom: 0,
-    backgroundColor: '#2388C7', // Exact color from specs
+    backgroundColor: "#2388C7", // Exact color from specs
   },
   // Modal styles
   modalContainer: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     padding: 20,
     margin: 20,
     borderRadius: 12,
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#000000',
+    fontWeight: "600",
+    color: "#000000",
     marginBottom: 16,
   },
   modalInput: {
     marginBottom: 20,
   },
   modalActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+    flexDirection: "row",
+    justifyContent: "flex-end",
     gap: 12,
   },
   cancelButton: {
-    borderColor: '#C6C6C8',
+    borderColor: "#C6C6C8",
   },
   addButton: {
-    backgroundColor: '#2388C7', // Same blue as FAB
+    backgroundColor: "#2388C7", // Same blue as FAB
   },
 });
 

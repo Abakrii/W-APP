@@ -1,24 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet, FlatList } from "react-native";
 import { RouteProp } from "@react-navigation/native";
-import { Text, Button, ActivityIndicator } from "react-native-paper";
-import { RootStackParamList } from "../../App";
-import { HistoricalEntry } from "../services/types";
-import { storageService } from "../services/storage";
-import { kelvinToCelsius } from "../services/weatherApi";
-import { formatHistoricalDate, capitalizeFirst } from "../utils/formatters";
-import LoadingSpinner from "../components/common/LoadingSpinner";
-import ErrorMessage from "../components/common/ErrorMessage";
-
-type HistoricalDataScreenRouteProp = RouteProp<
-  RootStackParamList,
-  "HistoricalData"
->;
-
-interface HistoricalDataScreenProps {
-  route: HistoricalDataScreenRouteProp;
-  navigation: any;
-}
+import { Text, Button } from "react-native-paper";
+import { RootStackParamList } from "../../../App";
+import { HistoricalEntry } from "../../services/types";
+import { storageService } from "../../services/storage";
+import { kelvinToCelsius } from "../../services/weatherApi";
+import { formatHistoricalDate, capitalizeFirst } from "../../utils/formatters";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import ErrorMessage from "../../components/common/ErrorMessage";
+import { HistoricalDataScreenProps, HistoryItemDisplayData } from "./types";
 
 /**
  * HistoricalDataScreen with View Details buttons for each entry
@@ -60,20 +51,36 @@ const HistoricalDataScreen: React.FC<HistoricalDataScreenProps> = ({
     });
   };
 
-  const renderHistoryItem = ({ item }: { item: HistoricalEntry }) => {
+  const getHistoryItemDisplayData = (
+    item: HistoricalEntry
+  ): HistoryItemDisplayData => {
     const temperature = kelvinToCelsius(item.data.main.temp);
     const description = item.data.weather[0]?.description
       ? capitalizeFirst(item.data.weather[0].description)
       : "N/A";
 
+    return {
+      dateText: formatHistoricalDate(item.timestamp),
+      weatherText: `${description}, ${temperature}°C`,
+      temperature,
+      description,
+    };
+  };
+
+  const renderHistoryItem = ({ item }: { item: HistoricalEntry }) => {
+    const displayData = getHistoryItemDisplayData(item);
+
     return (
-      <View style={styles.historyItem}>
-        <View style={styles.historyContent}>
-          <Text style={styles.dateText}>
-            {formatHistoricalDate(item.timestamp)}
+      <View
+        style={styles.historyItem}
+        testID={`history-item-${item.timestamp}`}
+      >
+        <View style={styles.historyContent} testID="history-content">
+          <Text style={styles.dateText} testID="date-text">
+            {displayData.dateText}
           </Text>
-          <Text style={styles.weatherText}>
-            {description}, {temperature}°C
+          <Text style={styles.weatherText} testID="weather-text">
+            {displayData.weatherText}
           </Text>
         </View>
         <Button
@@ -83,6 +90,7 @@ const HistoricalDataScreen: React.FC<HistoricalDataScreenProps> = ({
           style={styles.viewDetailsButton}
           onPress={() => handleViewDetails(item)}
           compact
+          testID={`view-details-button-${item.timestamp}`}
         >
           View Details
         </Button>
@@ -91,7 +99,12 @@ const HistoricalDataScreen: React.FC<HistoricalDataScreenProps> = ({
   };
 
   if (loading) {
-    return <LoadingSpinner message="Loading historical data..." />;
+    return (
+      <LoadingSpinner
+        message="Loading historical data..."
+        testID="loading-spinner"
+      />
+    );
   }
 
   if (error) {
@@ -100,12 +113,13 @@ const HistoricalDataScreen: React.FC<HistoricalDataScreenProps> = ({
         message={error}
         onRetry={loadHistoricalData}
         retryButtonText="Retry"
+        testID="error-message"
       />
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID="historical-data-screen">
       <FlatList
         data={historicalData}
         renderItem={renderHistoryItem}
