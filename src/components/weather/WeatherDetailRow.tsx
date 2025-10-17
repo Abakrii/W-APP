@@ -8,7 +8,7 @@ interface WeatherDetailRowProps {
 }
 
 /**
- * WeatherDetailRow component displays a label-value pair exactly like table design
+ * WeatherDetailRow component displays a label-value pair for weather details
  */
 const WeatherDetailRow: React.FC<WeatherDetailRowProps> = ({ 
   label, 
@@ -17,12 +17,8 @@ const WeatherDetailRow: React.FC<WeatherDetailRowProps> = ({
 }) => {
   return (
     <View style={styles.container} testID={testID}>
-      <View style={styles.labelContainer}>
-        <Text style={styles.label}>{label}</Text>
-      </View>
-      <View style={styles.valueContainer}>
-        <Text style={styles.value}>{value}</Text>
-      </View>
+      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.value}>{value}</Text>
     </View>
   );
 };
@@ -32,27 +28,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 16, // Exact spacing like design
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5', // Light grey border like design
-    marginHorizontal: 0, // No horizontal margin like design
-  },
-  labelContainer: {
-    flex: 1,
+    borderBottomColor: '#E5E5E5',
   },
   label: {
-    fontSize: 17, // Exact font size like design
-    fontWeight: '600', // Semibold like design
+    fontSize: 16,
+    fontWeight: '600',
     color: '#000000',
-  },
-  valueContainer: {
     flex: 1,
-    alignItems: 'flex-end',
   },
   value: {
-    fontSize: 17, // Exact font size like design
-    color: '#000000', // Black color like design
-    fontWeight: '400', // Regular weight like design
+    fontSize: 16,
+    color: '#666666',
+    fontWeight: '400',
+    flex: 1,
+    textAlign: 'right',
   },
 });
 
