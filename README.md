@@ -8,7 +8,9 @@ A modern, cross-platform weather application built with React Native, TypeScript
 
 ### 📱 App Demo & Features
 
-https://github.com/Abakrii/W-APP/blob/main/assets/demoVideo.mp4
+<video src="assets/demoVideo.mp4" width="300" controls>
+  Your browser does not support the video tag.
+</video>
 
 <p><em>Complete walkthrough of the Weather App showcasing all features and functionality</em></p>
 
