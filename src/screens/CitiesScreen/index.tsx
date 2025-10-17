@@ -173,8 +173,11 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
     >
       <View style={styles.cityItem} testID={`city-item-${item.name}`}>
         <View style={styles.cityContent}>
-          <Text style={styles.dash}>-</Text>
           <View style={styles.cityTextContainer}>
+            <Image
+              source={require("../../assets/cityB.png")} // Replace with your image path
+              style={styles.image}
+            />
             <Text
               style={styles.cityText}
               onPress={() => handleCityPress(item)}
@@ -246,6 +249,7 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
         onPress={() => setAddModalVisible(true)}
         customSize={56}
         testID="add-city-fab"
+        label="Add City"
       />
 
       {/* Add City Modal */}
@@ -350,6 +354,7 @@ const styles = StyleSheet.create({
   },
   cityTextContainer: {
     flex: 1,
+    flexDirection: "row",
   },
   dash: {
     fontSize: 17,
@@ -362,7 +367,8 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: "#000000",
     fontWeight: "400",
-    paddingVertical: 8,
+    paddingVertical: 18,
+    paddingHorizontal: 10,
   },
   actions: {
     alignItems: "center",
