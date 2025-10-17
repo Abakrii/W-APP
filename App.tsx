@@ -11,7 +11,7 @@ import CustomHeader from "./src/components/common/CustomHeader";
 
 export type RootStackParamList = {
   Cities: undefined;
-  CityDetail: { 
+  CityDetail: {
     city: City;
     historicalData?: WeatherData; // Add optional historical data
     historicalTimestamp?: string; // Add timestamp for historical data
@@ -25,42 +25,48 @@ export default function App() {
     <PaperProvider>
       <NavigationContainer>
         <StatusBar style="light" />
-        <Stack.Navigator 
+        <Stack.Navigator
           initialRouteName="Cities"
           screenOptions={{
             // Use custom header for all screens
-            header: ({ route, options, navigation }) => (
-              <CustomHeader 
-                title={options.title || route.name} 
-                showBackButton={route.name !== 'Cities'}
-                onBackPress={navigation.goBack}
-              />
-            ),
+            header: ({ route, options, navigation }) => {
+              return (
+                <CustomHeader
+                  title={options.title || route.name}
+                  showBackButton={route.name !== "Cities"}
+                  onBackPress={navigation.goBack}
+                />
+              );
+            },
           }}
         >
-          <Stack.Screen 
-            name="Cities" 
+          <Stack.Screen
+            name="Cities"
             component={CitiesScreen}
-            options={{ 
-              title: 'Cities',
+            options={{
+              title: "Cities",
               headerShown: true,
             }}
           />
-          <Stack.Screen 
-            name="CityDetail" 
+          <Stack.Screen
+            name="CityDetail"
             component={CityDetailScreen}
-            options={{ 
-              title: 'City Details',
+            options={({ route }) => ({
+              title:
+                route.params?.city?.name + " " + "Weather Details" ||
+                "City Details",
               headerShown: true,
-            }}
+            })}
           />
-          <Stack.Screen 
-            name="HistoricalData" 
+          <Stack.Screen
+            name="HistoricalData"
             component={HistoricalDataScreen}
-            options={{ 
-              title: 'Historical Data',
+            options={({ route }) => ({
+              title:
+                route.params?.city?.name + " " + "Historical Data" ||
+                "Historical Data",
               headerShown: true,
-            }}
+            })}
           />
         </Stack.Navigator>
       </NavigationContainer>
