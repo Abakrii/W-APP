@@ -1,13 +1,6 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { City } from '../../services/types';
-
-interface CityCardProps {
-  city: City;
-  onPress: (city: City) => void;
-  onHistoryPress: (city: City) => void;
-  onRemovePress: (cityName: string) => void;
-}
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { CityCardProps } from "./types";
 
 /**
  * CityCard component displays a city exactly like the design with dash prefix
@@ -19,33 +12,38 @@ const CityCard: React.FC<CityCardProps> = ({
   onRemovePress,
 }) => {
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID={`city-card-container-${city.name}`}>
       {/* Dash before city name exactly like design */}
-      <Text style={styles.dash}>-</Text>
-      
-      <TouchableOpacity 
+      <Text style={styles.dash} testID={`dash-${city.name}`}>
+        -
+      </Text>
+
+      <TouchableOpacity
         style={styles.cityInfo}
         onPress={() => onPress(city)}
         testID={`city-card-${city.name}`}
+        accessibilityLabel={`View weather for ${city.name}, ${city.country}`}
       >
         <Text style={styles.cityText}>
           {city.name}, {city.country}
         </Text>
       </TouchableOpacity>
-      
-      <View style={styles.actions}>
-        <TouchableOpacity 
+
+      <View style={styles.actions} testID={`actions-${city.name}`}>
+        <TouchableOpacity
           style={styles.historyButton}
           onPress={() => onHistoryPress(city)}
           testID={`history-button-${city.name}`}
+          accessibilityLabel={`View history for ${city.name}`}
         >
           <Text style={styles.historyButtonText}>History</Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={styles.removeButton}
           onPress={() => onRemovePress(city.name)}
           testID={`remove-button-${city.name}`}
+          accessibilityLabel={`Remove ${city.name} from list`}
         >
           <Text style={styles.removeButtonText}>Remove</Text>
         </TouchableOpacity>
@@ -56,16 +54,16 @@ const CityCard: React.FC<CityCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 0,
     borderBottomWidth: 0, // No borders like design
   },
   dash: {
     fontSize: 17,
-    color: '#000000',
-    fontWeight: '400',
+    color: "#000000",
+    fontWeight: "400",
     marginRight: 8,
     width: 10, // Fixed width for alignment
   },
@@ -74,35 +72,35 @@ const styles = StyleSheet.create({
   },
   cityText: {
     fontSize: 17,
-    color: '#000000',
-    fontWeight: '400', // Regular weight like design
+    color: "#000000",
+    fontWeight: "400", // Regular weight like design
   },
   actions: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   historyButton: {
-    backgroundColor: '#34C759', // Green like design
+    backgroundColor: "#34C759", // Green like design
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
   },
   historyButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   removeButton: {
-    backgroundColor: '#FF3B30', // Red like design
+    backgroundColor: "#FF3B30", // Red like design
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
   },
   removeButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
 

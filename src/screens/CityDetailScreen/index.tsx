@@ -1,22 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
 import { RouteProp } from "@react-navigation/native";
-import { Text, Divider, ActivityIndicator, Snackbar } from "react-native-paper";
-import { RootStackParamList } from "../../App";
-import { WeatherData } from "../services/types";
-import { weatherApi, kelvinToCelsius } from "../services/weatherApi";
-import { storageService } from "../services/storage";
-import { formatDate, capitalizeFirst } from "../utils/formatters";
-import WeatherDetailRow from "../components/weather/WeatherDetailRow";
-import WeatherIcon from "../components/weather/WeatherIcon";
-import ErrorMessage from "../components/common/ErrorMessage";
-
-type CityDetailScreenRouteProp = RouteProp<RootStackParamList, "CityDetail">;
-
-interface CityDetailScreenProps {
-  route: CityDetailScreenRouteProp;
-  navigation: any;
-}
+import { Text, Divider, ActivityIndicator } from "react-native-paper";
+import { RootStackParamList } from "../../../App";
+import { WeatherData } from "../../services/types";
+import { weatherApi, kelvinToCelsius } from "../../services/weatherApi";
+import { storageService } from "../../services/storage";
+import { formatDate, capitalizeFirst } from "../../utils/formatters";
+import WeatherDetailRow from "../../components/weather/WeatherDetailRow";
+import WeatherIcon from "../../components/weather/WeatherIcon";
+import ErrorMessage from "../../components/common/ErrorMessage";
+import { CityDetailScreenProps, WeatherDisplayData } from "./types";
 
 /**
  * CityDetailScreen - Now supports both current and historical weather data
@@ -72,10 +66,27 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({
     loadWeatherData();
   };
 
+  const getWeatherDisplayData = (): WeatherDisplayData | null => {
+    if (!weatherData) return null;
+
+    return {
+      temperature: kelvinToCelsius(weatherData.main.temp),
+      description: weatherData.weather[0]?.description
+        ? capitalizeFirst(weatherData.weather[0].description)
+        : "N/A",
+      humidity: weatherData.main.humidity,
+      windSpeed: weatherData.wind.speed,
+      iconCode: weatherData.weather[0]?.icon || "01d",
+      feelsLike: kelvinToCelsius(weatherData.main.feels_like),
+      pressure: weatherData.main.pressure,
+      isHistoricalData: !!historicalData,
+    };
+  };
+
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" />
+      <View style={styles.loadingContainer} testID="loading-container">
+        <ActivityIndicator size="large" testID="loading-indicator" />
         <Text style={styles.loadingText}>Loading weather data...</Text>
       </View>
     );
@@ -87,78 +98,115 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({
         message={error}
         onRetry={handleRetry}
         retryButtonText="Retry"
+        testID="error-message"
       />
     );
   }
 
   if (!weatherData) {
     return (
-      <View style={styles.centerContainer}>
+      <View style={styles.centerContainer} testID="no-data-container">
         <Text>No weather data available</Text>
       </View>
     );
   }
 
-  const temperature = kelvinToCelsius(weatherData.main.temp);
-  const description = weatherData.weather[0]?.description
-    ? capitalizeFirst(weatherData.weather[0].description)
-    : "N/A";
-  const humidity = weatherData.main.humidity;
-  const windSpeed = weatherData.wind.speed;
-  const iconCode = weatherData.weather[0]?.icon || "01d";
-  const feelsLike = kelvinToCelsius(weatherData.main.feels_like);
-  const pressure = weatherData.main.pressure;
-
-  // Determine if we're showing historical data
-  const isHistoricalData = !!historicalData;
+  const displayData = getWeatherDisplayData();
+  if (!displayData) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text>Unable to process weather data</Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID="city-detail-screen">
       <ScrollView
         style={styles.content}
         contentContainerStyle={styles.contentContainer}
+        testID="weather-scrollview"
       >
         {/* City Name */}
-        <Text style={styles.cityTitle}>
+        <Text style={styles.cityTitle} testID="city-title">
           {city.name}, {city.country}
         </Text>
 
         {/* Weather Icon and Basic Info */}
-        <View style={styles.weatherHeader}>
+        <View style={styles.weatherHeader} testID="weather-header">
           <WeatherIcon
-            iconCode={iconCode}
-            description={description}
+            iconCode={displayData.iconCode}
+            description={displayData.description}
             size="large"
             showDescription={true}
+            testID="weather-icon"
           />
 
-          <View style={styles.temperatureContainer}>
-            <Text style={styles.temperature}>{temperature}°C</Text>
-            <Text style={styles.weatherDescription}>{description}</Text>
-            {isHistoricalData && (
-              <Text style={styles.historicalBadge}>Historical Data</Text>
+          <View
+            style={styles.temperatureContainer}
+            testID="temperature-container"
+          >
+            <Text style={styles.temperature} testID="temperature-text">
+              {displayData.temperature}°C
+            </Text>
+            <Text style={styles.weatherDescription} testID="description-text">
+              {displayData.description}
+            </Text>
+            {displayData.isHistoricalData && (
+              <Text style={styles.historicalBadge} testID="historical-badge">
+                Historical Data
+              </Text>
             )}
           </View>
         </View>
 
-        <Divider style={styles.sectionDivider} />
+        <Divider style={styles.sectionDivider} testID="section-divider" />
 
         {/* Weather Details Table */}
-        <View style={styles.weatherCard}>
-          <Text style={styles.detailsTitle}>Weather Details</Text>
-          <WeatherDetailRow label="Description" value={description} />
-          <WeatherDetailRow label="Temperature" value={`${temperature}° C`} />
-          <WeatherDetailRow label="Feels Like" value={`${feelsLike}° C`} />
-          <WeatherDetailRow label="Humidity" value={`${humidity}%`} />
-          <WeatherDetailRow label="Windspeed" value={`${windSpeed} km/h`} />
-          <WeatherDetailRow label="Pressure" value={`${pressure} hPa`} />
+        <View style={styles.weatherCard} testID="weather-details-card">
+          <Text style={styles.detailsTitle} testID="details-title">
+            Weather Details
+          </Text>
+          <WeatherDetailRow
+            label="Description"
+            value={displayData.description}
+            testID="detail-description"
+          />
+          <WeatherDetailRow
+            label="Temperature"
+            value={`${displayData.temperature}° C`}
+            testID="detail-temperature"
+          />
+          <WeatherDetailRow
+            label="Feels Like"
+            value={`${displayData.feelsLike}° C`}
+            testID="detail-feels-like"
+          />
+          <WeatherDetailRow
+            label="Humidity"
+            value={`${displayData.humidity}%`}
+            testID="detail-humidity"
+          />
+          <WeatherDetailRow
+            label="Windspeed"
+            value={`${displayData.windSpeed} km/h`}
+            testID="detail-windspeed"
+          />
+          <WeatherDetailRow
+            label="Pressure"
+            value={`${displayData.pressure} hPa`}
+            testID="detail-pressure"
+          />
         </View>
 
         {/* Last Updated / Historical Timestamp */}
         {lastUpdated && (
-          <View style={styles.lastUpdatedContainer}>
-            <Text style={styles.lastUpdated}>
-              {isHistoricalData
+          <View
+            style={styles.lastUpdatedContainer}
+            testID="last-updated-container"
+          >
+            <Text style={styles.lastUpdated} testID="last-updated-text">
+              {displayData.isHistoricalData
                 ? `Historical weather data for ${
                     city.name
                   } recorded on\n${lastUpdated.replace(" - ", " - ")}`
@@ -170,11 +218,12 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({
         )}
 
         {/* Only show refresh for current data */}
-        {error && weatherData && !isHistoricalData && (
+        {error && weatherData && !displayData.isHistoricalData && (
           <ErrorMessage
             message={error}
             onRetry={handleRetry}
             retryButtonText="Refresh Data"
+            testID="refresh-error-message"
           />
         )}
       </ScrollView>

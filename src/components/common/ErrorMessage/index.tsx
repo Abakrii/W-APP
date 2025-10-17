@@ -1,11 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-
-interface ErrorMessageProps {
-  message: string;
-  onRetry?: () => void;
-  retryButtonText?: string;
-}
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { ErrorMessageProps } from "./types";
 
 /**
  * ErrorMessage component displays an error message with optional retry button
@@ -13,16 +8,20 @@ interface ErrorMessageProps {
  * @param onRetry - Optional retry callback function
  * @param retryButtonText - Text for the retry button
  */
-const ErrorMessage: React.FC<ErrorMessageProps> = ({ 
-  message, 
-  onRetry, 
-  retryButtonText = 'Try Again' 
+const ErrorMessage: React.FC<ErrorMessageProps> = ({
+  message,
+  onRetry,
+  retryButtonText = "Try Again",
 }) => {
   return (
     <View style={styles.container} testID="error-message">
       <Text style={styles.message}>{message}</Text>
       {onRetry && (
-        <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
+        <TouchableOpacity
+          style={styles.retryButton}
+          onPress={onRetry}
+          testID="retry-button"
+        >
           <Text style={styles.retryButtonText}>{retryButtonText}</Text>
         </TouchableOpacity>
       )}
@@ -33,26 +32,26 @@ const ErrorMessage: React.FC<ErrorMessageProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   message: {
     fontSize: 16,
-    color: '#FF3B30',
-    textAlign: 'center',
+    color: "#FF3B30",
+    textAlign: "center",
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
   },
   retryButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
 
