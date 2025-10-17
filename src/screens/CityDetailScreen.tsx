@@ -28,18 +28,24 @@ interface CityDetailScreenProps {
 }
 
 /**
- * CityDetailScreen displays detailed weather information with weather icon
+ * CityDetailScreen - Now supports both current and historical weather data
  */
 const CityDetailScreen: React.FC<CityDetailScreenProps> = ({ route, navigation }) => {
-  const { city } = route.params;
-  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { city, historicalData, historicalTimestamp } = route.params;
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(historicalData || null);
+  const [loading, setLoading] = useState(!historicalData); // Only load if no historical data
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
 
   useEffect(() => {
-    loadWeatherData();
-  }, [city]);
+    if (historicalData && historicalTimestamp) {
+      // If we have historical data, use it directly
+      setLastUpdated(formatDate(historicalTimestamp));
+    } else {
+      // Otherwise fetch current data
+      loadWeatherData();
+    }
+  }, [city, historicalData, historicalTimestamp]);
 
   const loadWeatherData = async () => {
     setLoading(true);
@@ -104,9 +110,20 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({ route, navigation }
   const humidity = weatherData.main.humidity;
   const windSpeed = weatherData.wind.speed;
   const iconCode = weatherData.weather[0]?.icon || '01d';
+  const feelsLike = kelvinToCelsius(weatherData.main.feels_like);
+  const pressure = weatherData.main.pressure;
+
+  // Determine if we're showing historical data
+  const isHistoricalData = !!historicalData;
 
   return (
     <View style={styles.container}>
+      {/* Custom Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>
+          {isHistoricalData ? 'Historical Weather' : 'Weather Details'}
+        </Text>
+      </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
         {/* City Name */}
@@ -124,6 +141,9 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({ route, navigation }
           <View style={styles.temperatureContainer}>
             <Text style={styles.temperature}>{temperature}°C</Text>
             <Text style={styles.weatherDescription}>{description}</Text>
+            {isHistoricalData && (
+              <Text style={styles.historicalBadge}>Historical Data</Text>
+            )}
           </View>
         </View>
 
@@ -135,36 +155,43 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({ route, navigation }
           <WeatherDetailRow 
             label="Description" 
             value={description}
-            testID="weather-description"
           />
           <WeatherDetailRow 
             label="Temperature" 
             value={`${temperature}° C`}
-            testID="weather-temperature"
+          />
+          <WeatherDetailRow 
+            label="Feels Like" 
+            value={`${feelsLike}° C`}
           />
           <WeatherDetailRow 
             label="Humidity" 
             value={`${humidity}%`}
-            testID="weather-humidity"
           />
           <WeatherDetailRow 
             label="Windspeed" 
             value={`${windSpeed} km/h`}
-            testID="weather-windspeed"
+          />
+          <WeatherDetailRow 
+            label="Pressure" 
+            value={`${pressure} hPa`}
           />
         </View>
 
-        {/* Last Updated */}
+        {/* Last Updated / Historical Timestamp */}
         {lastUpdated && (
           <View style={styles.lastUpdatedContainer}>
-            <Text style={styles.lastUpdated} testID="last-updated">
-              Weather information for {city.name} received on {"\n"}
-              {lastUpdated.replace(' - ', ' - ')}
+            <Text style={styles.lastUpdated}>
+              {isHistoricalData 
+                ? `Historical weather data for ${city.name} recorded on\n${lastUpdated.replace(' - ', ' - ')}`
+                : `Weather information for ${city.name} received on\n${lastUpdated.replace(' - ', ' - ')}`
+              }
             </Text>
           </View>
         )}
 
-        {error && weatherData && (
+        {/* Only show refresh for current data */}
+        {error && weatherData && !isHistoricalData && (
           <ErrorMessage 
             message={error} 
             onRetry={handleRetry}
@@ -247,6 +274,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666666',
     textAlign: 'right',
+    marginBottom: 4,
+  },
+  historicalBadge: {
+    fontSize: 12,
+    color: '#2388C7',
+    fontWeight: '600',
+    backgroundColor: '#E3F2FD',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    overflow: 'hidden',
   },
   sectionDivider: {
     marginVertical: 16,

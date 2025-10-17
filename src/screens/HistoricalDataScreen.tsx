@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   FlatList,
 } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
+import {
+  Text,
+  Button,
+  ActivityIndicator,
+} from 'react-native-paper';
 import { RootStackParamList } from '../../App';
 import { HistoricalEntry } from '../services/types';
 import { storageService } from '../services/storage';
@@ -18,12 +22,13 @@ type HistoricalDataScreenRouteProp = RouteProp<RootStackParamList, 'HistoricalDa
 
 interface HistoricalDataScreenProps {
   route: HistoricalDataScreenRouteProp;
+  navigation: any;
 }
 
 /**
- * HistoricalDataScreen displays historical weather data exactly like the design
+ * HistoricalDataScreen with View Details buttons for each entry
  */
-const HistoricalDataScreen: React.FC<HistoricalDataScreenProps> = ({ route }) => {
+const HistoricalDataScreen: React.FC<HistoricalDataScreenProps> = ({ route, navigation }) => {
   const { city } = route.params;
   const [historicalData, setHistoricalData] = useState<HistoricalEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +53,15 @@ const HistoricalDataScreen: React.FC<HistoricalDataScreenProps> = ({ route }) =>
     }
   };
 
+  const handleViewDetails = (historicalEntry: HistoricalEntry) => {
+    // Navigate to City Detail screen with historical data
+    navigation.navigate('CityDetail', {
+      city: city,
+      historicalData: historicalEntry.data,
+      historicalTimestamp: historicalEntry.timestamp
+    });
+  };
+
   const renderHistoryItem = ({ item }: { item: HistoricalEntry }) => {
     const temperature = kelvinToCelsius(item.data.main.temp);
     const description = item.data.weather[0]?.description 
@@ -55,11 +69,23 @@ const HistoricalDataScreen: React.FC<HistoricalDataScreenProps> = ({ route }) =>
       : 'N/A';
     
     return (
-      <View style={styles.historyItem} testID={`history-item-${item.timestamp}`}>
-        <Text style={styles.dateText}>{formatHistoricalDate(item.timestamp)}</Text>
-        <Text style={styles.weatherText}>
-          {description}, {temperature}°C
-        </Text>
+      <View style={styles.historyItem}>
+        <View style={styles.historyContent}>
+          <Text style={styles.dateText}>{formatHistoricalDate(item.timestamp)}</Text>
+          <Text style={styles.weatherText}>
+            {description}, {temperature}°C
+          </Text>
+        </View>
+        <Button
+          mode="contained"
+          buttonColor="#2388C7"
+          textColor="#FFFFFF"
+          style={styles.viewDetailsButton}
+          onPress={() => handleViewDetails(item)}
+          compact
+        >
+          View Details
+        </Button>
       </View>
     );
   };
@@ -80,9 +106,11 @@ const HistoricalDataScreen: React.FC<HistoricalDataScreenProps> = ({ route }) =>
 
   return (
     <View style={styles.container}>
-      {/* Title exactly like design */}
-      <Text style={styles.title}>{city.name} historical</Text>
-      
+      {/* Custom Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>{city.name} historical</Text>
+      </View>
+
       <FlatList
         data={historicalData}
         renderItem={renderHistoryItem}
@@ -94,6 +122,7 @@ const HistoricalDataScreen: React.FC<HistoricalDataScreenProps> = ({ route }) =>
         }
         testID="historical-data-list"
         style={styles.list}
+        contentContainerStyle={styles.listContent}
       />
     </View>
   );
@@ -103,33 +132,55 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 24,
-    paddingTop: 60, // Exact spacing like design
   },
-  title: {
-    fontSize: 34, // Exact size like design
-    fontWeight: '700', // Bold like design
-    color: '#000000',
-    marginBottom: 30, // Exact spacing like design
+  header: {
+    width: '100%',
+    height: 150,
+    backgroundColor: '#2388C7',
+    justifyContent: 'flex-end',
+    alignItems: 'flex-start',
+    paddingHorizontal: 24,
+    paddingBottom: 16,
+  },
+  headerTitle: {
+    color: '#FFFFFF',
+    fontSize: 34,
+    fontWeight: '700',
+    lineHeight: 41,
   },
   list: {
     flex: 1,
+    paddingHorizontal: 24,
+  },
+  listContent: {
+    paddingTop: 20,
+    paddingBottom: 30,
   },
   historyItem: {
-    paddingVertical: 12, // Exact spacing like design
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
     paddingHorizontal: 0,
-    borderBottomWidth: 0, // No borders like design
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+  historyContent: {
+    flex: 1,
   },
   dateText: {
-    fontSize: 17, // Exact font size like design
-    color: '#000000', // Black color like design
-    fontWeight: '400', // Regular weight like design
-    marginBottom: 4, // Exact spacing like design
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 4,
   },
   weatherText: {
-    fontSize: 17, // Exact font size like design
-    fontWeight: '600', // Bold weight like design (from the bold text in design)
+    fontSize: 16,
+    fontWeight: '600',
     color: '#000000',
+  },
+  viewDetailsButton: {
+    borderRadius: 6,
+    marginLeft: 12,
   },
   emptyText: {
     textAlign: 'center',

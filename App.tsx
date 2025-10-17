@@ -6,15 +6,18 @@ import { PaperProvider } from "react-native-paper";
 import CitiesScreen from "./src/screens/CitiesScreen";
 import CityDetailScreen from "./src/screens/CityDetailScreen";
 import HistoricalDataScreen from "./src/screens/HistoricalDataScreen";
-import { City } from "./src/services/types";
+import { City, WeatherData } from "./src/services/types";
 import CustomHeader from "./src/components/common/CustomHeader";
 
 export type RootStackParamList = {
   Cities: undefined;
-  CityDetail: { city: City };
+  CityDetail: { 
+    city: City;
+    historicalData?: WeatherData; // Add optional historical data
+    historicalTimestamp?: string; // Add timestamp for historical data
+  };
   HistoricalData: { city: City };
 };
-
 const Stack = createStackNavigator<RootStackParamList>();
 
 export default function App() {
