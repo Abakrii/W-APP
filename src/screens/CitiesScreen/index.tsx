@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { View, StyleSheet, FlatList, Animated } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   Text,
@@ -12,6 +12,7 @@ import {
   TextInput,
   FAB,
 } from "react-native-paper";
+import { RectButton, Swipeable } from "react-native-gesture-handler";
 import { City } from "../../services/types";
 import { storageService } from "../../services/storage";
 import { weatherApi } from "../../services/weatherApi";
@@ -19,9 +20,6 @@ import { validateCityName } from "../../utils/helpers";
 import { capitalizeFirst } from "../../utils/formatters";
 import { CitiesScreenProps } from "./types";
 
-/**
- * CitiesScreen - With round blue FAB button on the right
- */
 const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
   const [cities, setCities] = useState<City[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +28,7 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [newCityName, setNewCityName] = useState("");
   const [isAdding, setIsAdding] = useState(false);
+  const swipeableRefs = useRef<{ [key: string]: Swipeable }>({});
 
   useFocusEffect(
     useCallback(() => {
@@ -99,6 +98,12 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
 
   const handleRemoveCity = async (cityName: string) => {
     try {
+      // Close the swipeable
+      if (swipeableRefs.current[cityName]) {
+        swipeableRefs.current[cityName].close();
+        delete swipeableRefs.current[cityName];
+      }
+
       const updatedCities = await storageService.removeCity(cityName);
       setCities(updatedCities);
       showSnackbar(`${cityName} removed`);
@@ -116,43 +121,78 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
     navigation.navigate("HistoricalData", { city });
   };
 
-  const renderCityItem = ({ item }: { item: City }) => (
-    <View style={styles.cityItem} testID={`city-item-${item.name}`}>
-      <TouchableOpacity
-        style={styles.cityContent}
-        onPress={() => handleCityPress(item)}
-        testID={`city-press-${item.name}`}
-      >
-        <Text style={styles.dash}>-</Text>
-        <Text style={styles.cityText}>
-          {item.name}, {item.country}
-        </Text>
-      </TouchableOpacity>
-      <View style={styles.actions} testID={`actions-${item.name}`}>
-        <Button
-          mode="contained"
-          buttonColor="#34C759"
-          textColor="#FFFFFF"
-          style={styles.historyButton}
-          onPress={() => handleHistoryPress(item)}
-          compact
-          testID={`history-button-${item.name}`}
+  const renderRightActions = (
+    progress: Animated.AnimatedInterpolation<number>,
+    dragX: Animated.AnimatedInterpolation<number>,
+    city: City
+  ) => {
+    const scale = dragX.interpolate({
+      inputRange: [-100, 0],
+      outputRange: [1, 0],
+      extrapolate: "clamp",
+    });
+
+    return (
+      <View style={styles.swipeActions}>
+        <RectButton
+          style={[styles.deleteButton, styles.rightAction]}
+          onPress={() => handleRemoveCity(city.name)}
         >
-          History
-        </Button>
-        <Button
-          mode="contained"
-          buttonColor="#FF3B30"
-          textColor="#FFFFFF"
-          style={styles.removeButton}
-          onPress={() => handleRemoveCity(item.name)}
-          compact
-          testID={`remove-button-${item.name}`}
-        >
-          Remove
-        </Button>
+          <Animated.Text
+            style={[styles.actionText, { transform: [{ scale }] }]}
+          >
+            Delete
+          </Animated.Text>
+        </RectButton>
       </View>
-    </View>
+    );
+  };
+
+  const setSwipeableRef = (cityName: string, ref: Swipeable) => {
+    if (ref) {
+      swipeableRefs.current[cityName] = ref;
+    }
+  };
+
+  const renderCityItem = ({ item }: { item: City }) => (
+    <Swipeable
+      ref={(ref) => setSwipeableRef(item.name, ref!)}
+      renderRightActions={(progress, dragX) =>
+        renderRightActions(progress, dragX, item)
+      }
+      rightThreshold={40}
+      friction={2}
+      testID={`swipeable-${item.name}`}
+    >
+      <View style={styles.cityItem} testID={`city-item-${item.name}`}>
+        <View style={styles.cityContent}>
+          <Text style={styles.dash}>-</Text>
+          <View style={styles.cityTextContainer}>
+            <Text
+              style={styles.cityText}
+              onPress={() => handleCityPress(item)}
+              testID={`city-press-${item.name}`}
+            >
+              {item.name}, {item.country}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.actions} testID={`actions-${item.name}`}>
+          <Button
+            mode="contained"
+            buttonColor="#34C759"
+            textColor="#FFFFFF"
+            style={styles.historyButton}
+            onPress={() => handleHistoryPress(item)}
+            compact
+            testID={`history-button-${item.name}`}
+          >
+            History
+          </Button>
+        </View>
+      </View>
+    </Swipeable>
   );
 
   if (isLoading) {
@@ -176,6 +216,9 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
           ListEmptyComponent={
             <View style={styles.emptyContainer} testID="empty-container">
               <Text style={styles.emptyText}>No cities added yet</Text>
+              <Text style={styles.emptySubtext}>
+                Tap the + button to add your first city
+              </Text>
             </View>
           }
           style={styles.list}
@@ -265,21 +308,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
-  header: {
-    width: "100%",
-    height: 150,
-    backgroundColor: "#2388C7",
-    justifyContent: "flex-end",
-    alignItems: "flex-start",
-    paddingHorizontal: 24,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    color: "#FFFFFF",
-    fontSize: 34,
-    fontWeight: "700",
-    lineHeight: 41,
-  },
   content: {
     flex: 1,
     paddingHorizontal: 24,
@@ -308,10 +336,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 0,
+    backgroundColor: "#FFFFFF",
   },
   cityContent: {
     flexDirection: "row",
     alignItems: "center",
+    flex: 1,
+  },
+  cityTextContainer: {
     flex: 1,
   },
   dash: {
@@ -325,7 +357,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: "#000000",
     fontWeight: "400",
-    flex: 1,
+    paddingVertical: 8,
   },
   actions: {
     flexDirection: "row",
@@ -335,8 +367,23 @@ const styles = StyleSheet.create({
   historyButton: {
     borderRadius: 6,
   },
-  removeButton: {
-    borderRadius: 6,
+  swipeActions: {
+    flexDirection: "row",
+    width: 100,
+  },
+  rightAction: {
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
+  },
+  deleteButton: {
+    backgroundColor: "#FF3B30",
+  },
+  actionText: {
+    color: "white",
+    fontSize: 16,
+    backgroundColor: "transparent",
+    fontWeight: "600",
   },
   emptyContainer: {
     flex: 1,
@@ -348,21 +395,25 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: "#666666",
     fontStyle: "italic",
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: "#999999",
+    textAlign: "center",
   },
   divider: {
     height: 1,
     backgroundColor: "#E5E5E5",
     marginBottom: 20,
   },
-  // FAB Styles - Round blue button on the right
   fab: {
     position: "absolute",
     margin: 16,
     right: 0,
     bottom: 0,
-    backgroundColor: "#2388C7", // Exact color from specs
+    backgroundColor: "#2388C7",
   },
-  // Modal styles
   modalContainer: {
     backgroundColor: "white",
     padding: 20,
@@ -387,7 +438,7 @@ const styles = StyleSheet.create({
     borderColor: "#C6C6C8",
   },
   addButton: {
-    backgroundColor: "#2388C7", // Same blue as FAB
+    backgroundColor: "#2388C7",
   },
 });
 
