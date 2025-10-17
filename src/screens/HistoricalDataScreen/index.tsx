@@ -9,10 +9,11 @@ import { kelvinToCelsius } from "../../services/weatherApi";
 import { formatHistoricalDate, capitalizeFirst } from "../../utils/formatters";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorMessage from "../../components/common/ErrorMessage";
+import WeatherIcon from "../../components/weather/WeatherIcon";
 import { HistoricalDataScreenProps, HistoryItemDisplayData } from "./types";
 
 /**
- * HistoricalDataScreen with View Details buttons for each entry
+ * HistoricalDataScreen with Weather Icons and View Details buttons for each entry
  */
 const HistoricalDataScreen: React.FC<HistoricalDataScreenProps> = ({
   route,
@@ -58,12 +59,14 @@ const HistoricalDataScreen: React.FC<HistoricalDataScreenProps> = ({
     const description = item.data.weather[0]?.description
       ? capitalizeFirst(item.data.weather[0].description)
       : "N/A";
+    const iconCode = item.data.weather[0]?.icon || "01d";
 
     return {
       dateText: formatHistoricalDate(item.timestamp),
       weatherText: `${description}, ${temperature}°C`,
       temperature,
       description,
+      iconCode,
     };
   };
 
@@ -75,6 +78,15 @@ const HistoricalDataScreen: React.FC<HistoricalDataScreenProps> = ({
         style={styles.historyItem}
         testID={`history-item-${item.timestamp}`}
       >
+        {/* Weather Icon */}
+        <WeatherIcon
+          iconCode={displayData.iconCode}
+          description={displayData.description}
+          size="small"
+          showDescription={false}
+          style={styles.weatherIcon}
+        />
+
         <View style={styles.historyContent} testID="history-content">
           <Text style={styles.dateText} testID="date-text">
             {displayData.dateText}
@@ -173,6 +185,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     borderBottomWidth: 1,
     borderBottomColor: "#E5E5E5",
+  },
+  weatherIcon: {
+    marginRight: 12,
   },
   historyContent: {
     flex: 1,

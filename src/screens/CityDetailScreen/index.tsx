@@ -1,13 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { RouteProp } from "@react-navigation/native";
-import { 
-  Text, 
-  Modal, 
-  Portal,
-  Button,
-  Divider
-} from "react-native-paper";
+import { Text, Modal, Portal, Button, Divider } from "react-native-paper";
 import { RootStackParamList } from "../../../App";
 import { WeatherData } from "../../services/types";
 import { weatherApi, kelvinToCelsius } from "../../services/weatherApi";
@@ -16,6 +10,7 @@ import { formatDate, capitalizeFirst } from "../../utils/formatters";
 import WeatherIcon from "../../components/weather/WeatherIcon";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import { CityDetailScreenProps, WeatherDisplayData } from "./types";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
 
 /**
  * CityDetailScreen - Shows weather data in dialog with last updated text outside
@@ -94,21 +89,6 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({
   };
 
   const renderContent = () => {
-    if (loading) {
-      return (
-        <View style={styles.dialogContent}>
-          <Text style={styles.loadingText}>Loading weather data...</Text>
-          <Button 
-            mode="outlined" 
-            onPress={handleClose}
-            style={styles.closeButton}
-          >
-            Close
-          </Button>
-        </View>
-      );
-    }
-
     if (error && !weatherData) {
       return (
         <View style={styles.dialogContent}>
@@ -117,8 +97,8 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({
             onRetry={handleRetry}
             retryButtonText="Retry"
           />
-          <Button 
-            mode="outlined" 
+          <Button
+            mode="outlined"
             onPress={handleClose}
             style={styles.closeButton}
           >
@@ -132,8 +112,8 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({
       return (
         <View style={styles.dialogContent}>
           <Text style={styles.noDataText}>No weather data available</Text>
-          <Button 
-            mode="outlined" 
+          <Button
+            mode="outlined"
             onPress={handleClose}
             style={styles.closeButton}
           >
@@ -148,8 +128,8 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({
       return (
         <View style={styles.dialogContent}>
           <Text style={styles.noDataText}>Unable to process weather data</Text>
-          <Button 
-            mode="outlined" 
+          <Button
+            mode="outlined"
             onPress={handleClose}
             style={styles.closeButton}
           >
@@ -183,17 +163,17 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({
             <Text style={styles.label}>Description</Text>
             <Text style={styles.value}>{displayData.description}</Text>
           </View>
-          
+
           <View style={styles.tableRow}>
             <Text style={styles.label}>Temperature</Text>
             <Text style={styles.value}>{displayData.temperature}° C</Text>
           </View>
-          
+
           <View style={styles.tableRow}>
             <Text style={styles.label}>Humidity</Text>
             <Text style={styles.value}>{displayData.humidity}%</Text>
           </View>
-          
+
           <View style={styles.tableRow}>
             <Text style={styles.label}>Windspeed</Text>
             <Text style={styles.value}>{displayData.windSpeed} km/h</Text>
@@ -201,8 +181,8 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({
         </View>
 
         {/* Close Button */}
-        <Button 
-          mode="contained" 
+        <Button
+          mode="contained"
           onPress={handleClose}
           style={styles.closeButton}
           labelStyle={styles.closeButtonLabel}
@@ -213,8 +193,13 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({
     );
   };
 
-  return (
-    <View style={styles.container}>
+  return loading ? (
+    <LoadingSpinner
+      message="Loading weather data..."
+      testID="loading-spinner"
+    />
+  ) : (
+    <>
       {/* Last Updated Text - Outside the dialog */}
       {lastUpdated && weatherData && (
         <View style={styles.lastUpdatedContainer}>
@@ -235,7 +220,7 @@ const CityDetailScreen: React.FC<CityDetailScreenProps> = ({
           {renderContent()}
         </Modal>
       </Portal>
-    </View>
+    </>
   );
 };
 
