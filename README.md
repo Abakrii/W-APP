@@ -11,20 +11,20 @@ A modern, cross-platform weather application built with React Native, TypeScript
 <p><em>Main screen showing saved cities with add/remove functionality</em></p>
 
 ### 🌡️ Weather Details Screen
-<img src="screenshots/2.png" alt="Weather Details" width="200"/>
+<img src="screenshots/3.png" alt="Weather Details" width="200"/>
 <p><em>Detailed weather information with current conditions and metrics</em></p>
 
 ### 📊 Historical Data Screen
-<img src="screenshots/3.png" alt="Historical Data" width="200"/>
+<img src="screenshots/4.png" alt="Historical Data" width="200"/>
 <p><em>Historical weather entries with timeline view</em></p>
 
 ### ➕ Add City Modal
-<img src="screenshots/4.png" alt="Add City Modal" width="200"/>
+<img src="screenshots/2.png" alt="Add City Modal" width="200"/>
 <p><em>Modal for adding new cities with validation</em></p>
 
-### 🔄 Loading States
+### 🔄 Show the details of the history
 <img src="screenshots/5.png" alt="Loading State" width="200"/>
-<p><em>Smooth loading indicators during data fetching</em></p>
+<p><em>SHistorical weather entries details</em></p>
 
 </div>
 
