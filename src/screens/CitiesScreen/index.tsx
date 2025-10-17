@@ -261,9 +261,10 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
           testID="add-city-modal"
         >
           <Text style={styles.modalTitle}>Add New City</Text>
+
           <TextInput
             mode="outlined"
-            placeholder="Enter city name"
+            placeholder="Search for cities"
             value={newCityName}
             onChangeText={setNewCityName}
             onSubmitEditing={handleAddCity}
@@ -271,6 +272,16 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
             style={styles.modalInput}
             autoFocus
             testID="city-name-input"
+            left={
+              <TextInput.Icon
+                icon={() => (
+                  <Image
+                    source={require("../../assets/search.png")} // Replace with your image path
+                    style={styles.image}
+                  />
+                )}
+              />
+            }
           />
           <View style={styles.modalActions}>
             <Button
