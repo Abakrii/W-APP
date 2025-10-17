@@ -9,9 +9,6 @@ interface WeatherDetailRowProps {
 
 /**
  * WeatherDetailRow component displays a label-value pair for weather details
- * @param label - The label text (e.g., "Temperature")
- * @param value - The value text (e.g., "20° C")
- * @param testID - Test ID for testing purposes
  */
 const WeatherDetailRow: React.FC<WeatherDetailRowProps> = ({ 
   label, 
@@ -31,18 +28,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5E5',
   },
   label: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000',
+    color: '#000000',
+    flex: 1,
   },
   value: {
     fontSize: 16,
-    color: '#666',
+    color: '#666666',
+    fontWeight: '400',
+    flex: 1,
+    textAlign: 'right',
   },
 });
 

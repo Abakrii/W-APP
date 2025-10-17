@@ -6,7 +6,7 @@ export interface WeatherData {
       id: number;
       main: string;
       description: string;
-      icon: string;
+      icon: string; // This contains the icon code (e.g., "01d", "02n")
     }>;
     main: {
       temp: number;
@@ -26,6 +26,7 @@ export interface WeatherData {
     };
     dt: number;
   }
+  
   
   /**
    * City information interface

@@ -1,52 +1,75 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import { StatusBar } from 'expo-status-bar';
-import CitiesScreen from './src/screens/CitiesScreen';
-import CityDetailScreen from './src/screens/CityDetailScreen';
-import HistoricalDataScreen from './src/screens/HistoricalDataScreen';
-import { City } from './src/services/types';
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import { StatusBar } from "expo-status-bar";
+import { PaperProvider } from "react-native-paper";
+import CitiesScreen from "./src/screens/CitiesScreen";
+import CityDetailScreen from "./src/screens/CityDetailScreen";
+import HistoricalDataScreen from "./src/screens/HistoricalDataScreen";
+import { City, WeatherData } from "./src/services/types";
+import CustomHeader from "./src/components/common/CustomHeader";
 
 export type RootStackParamList = {
   Cities: undefined;
-  CityDetail: { city: City };
+  CityDetail: {
+    city: City;
+    historicalData?: WeatherData; // Add optional historical data
+    historicalTimestamp?: string; // Add timestamp for historical data
+  };
   HistoricalData: { city: City };
 };
-
 const Stack = createStackNavigator<RootStackParamList>();
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <StatusBar style="auto" />
-      <Stack.Navigator 
-        initialRouteName="Cities"
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: '#f8f8f8',
-          },
-          headerTintColor: '#000',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      >
-        <Stack.Screen 
-          name="Cities" 
-          component={CitiesScreen}
-          options={{ title: 'Cities' }}
-        />
-        <Stack.Screen 
-          name="CityDetail" 
-          component={CityDetailScreen}
-          options={{ title: 'City Details' }}
-        />
-        <Stack.Screen 
-          name="HistoricalData" 
-          component={HistoricalDataScreen}
-          options={{ title: 'Historical Data' }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <PaperProvider>
+      <NavigationContainer>
+        <StatusBar style="light" />
+        <Stack.Navigator
+          initialRouteName="Cities"
+          screenOptions={{
+            // Use custom header for all screens
+            header: ({ route, options, navigation }) => {
+              return (
+                <CustomHeader
+                  title={options.title || route.name}
+                  showBackButton={route.name !== "Cities"}
+                  onBackPress={navigation.goBack}
+                />
+              );
+            },
+          }}
+        >
+          <Stack.Screen
+            name="Cities"
+            component={CitiesScreen}
+            options={{
+              title: "Cities",
+              headerShown: true,
+            }}
+          />
+          <Stack.Screen
+            name="CityDetail"
+            component={CityDetailScreen}
+            options={({ route }) => ({
+              title:
+                route.params?.city?.name + " " + "Weather Details" ||
+                "City Details",
+              headerShown: true,
+            })}
+          />
+          <Stack.Screen
+            name="HistoricalData"
+            component={HistoricalDataScreen}
+            options={({ route }) => ({
+              title:
+                route.params?.city?.name + " " + "Historical Data" ||
+                "Historical Data",
+              headerShown: true,
+            })}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </PaperProvider>
   );
 }
