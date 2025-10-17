@@ -1,37 +1,43 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   FlatList,
-  TextInput,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import {
+  Text,
+  Button,
+  Divider,
+  ActivityIndicator,
+  Snackbar,
+  Modal,
+  Portal,
+  TextInput,
+} from 'react-native-paper';
 import { City } from '../services/types';
 import { storageService } from '../services/storage';
 import { weatherApi } from '../services/weatherApi';
 import { validateCityName } from '../utils/helpers';
 import { capitalizeFirst } from '../utils/formatters';
-import CityCard from '../components/weather/CityCard';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import ErrorMessage from '../components/common/ErrorMessage';
 
 interface CitiesScreenProps {
   navigation: any;
 }
 
 /**
- * CitiesScreen displays the list of saved cities exactly like the design
- * Features search functionality and city management
+ * CitiesScreen - Exact replica of the design screenshot
+ * Clean, minimal design with no visible search input
  */
 const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
   const [cities, setCities] = useState<City[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [newCityName, setNewCityName] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -41,36 +47,38 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
 
   const loadCities = async () => {
     setIsLoading(true);
-    setError(null);
     try {
       const savedCities = await storageService.getCities();
       setCities(savedCities);
     } catch (err) {
-      setError('Failed to load cities');
+      showSnackbar('Failed to load cities');
       console.error('Error loading cities:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const showSnackbar = (message: string) => {
+    setSnackbarMessage(message);
+    setSnackbarVisible(true);
+  };
+
   const handleAddCity = async () => {
-    if (!searchQuery.trim()) {
-      // When search is empty, just clear and show default list like design
-      setSearchQuery('');
+    if (!newCityName.trim()) {
+      showSnackbar('Please enter a city name');
       return;
     }
 
-    const validation = validateCityName(searchQuery);
+    const validation = validateCityName(newCityName);
     if (!validation.isValid) {
-      Alert.alert('Invalid City Name', validation.error);
+      showSnackbar(validation.error || 'Invalid city name');
       return;
     }
 
-    setIsSearching(true);
-    setError(null);
+    setIsAdding(true);
     
     try {
-      const formattedCityName = capitalizeFirst(searchQuery.trim());
+      const formattedCityName = capitalizeFirst(newCityName.trim());
       const result = await weatherApi.getCurrentWeather(formattedCityName);
       
       if (result.success && result.data) {
@@ -81,41 +89,29 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
         
         const updatedCities = await storageService.saveCity(cityData);
         setCities(updatedCities);
-        setSearchQuery('');
+        setNewCityName('');
+        setAddModalVisible(false);
         
         await storageService.saveWeatherData(cityData.name, result.data);
+        showSnackbar(`${cityData.name} added successfully`);
       } else {
-        Alert.alert('Error', result.error || 'Failed to add city');
+        showSnackbar(result.error || 'City not found');
       }
     } catch (err) {
-      setError('Failed to add city');
+      showSnackbar('Failed to add city');
       console.error('Error adding city:', err);
     } finally {
-      setIsSearching(false);
+      setIsAdding(false);
     }
   };
 
-  const handleRemoveCity = (cityName: string) => {
-    Alert.alert(
-      'Remove City',
-      `Are you sure you want to remove ${cityName}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: async () => removeCity(cityName),
-        },
-      ]
-    );
-  };
-
-  const removeCity = async (cityName: string) => {
+  const handleRemoveCity = async (cityName: string) => {
     try {
       const updatedCities = await storageService.removeCity(cityName);
       setCities(updatedCities);
+      showSnackbar(`${cityName} removed`);
     } catch (err) {
-      setError('Failed to remove city');
+      showSnackbar('Failed to remove city');
       console.error('Error removing city:', err);
     }
   };
@@ -129,80 +125,135 @@ const CitiesScreen: React.FC<CitiesScreenProps> = ({ navigation }) => {
   };
 
   const renderCityItem = ({ item }: { item: City }) => (
-    <CityCard
-      city={item}
-      onPress={handleCityPress}
-      onHistoryPress={handleHistoryPress}
-      onRemovePress={handleRemoveCity}
-    />
+    <View style={styles.cityItem}>
+      <TouchableOpacity 
+        style={styles.cityContent}
+        onPress={() => handleCityPress(item)}
+      >
+        <Text style={styles.dash}>-</Text>
+        <Text style={styles.cityText}>
+          {item.name}, {item.country}
+        </Text>
+      </TouchableOpacity>
+      <View style={styles.actions}>
+        <Button
+          mode="contained"
+          buttonColor="#34C759"
+          textColor="#FFFFFF"
+          style={styles.historyButton}
+          onPress={() => handleHistoryPress(item)}
+          compact
+        >
+          History
+        </Button>
+        <Button
+          mode="contained"
+          buttonColor="#FF3B30"
+          textColor="#FFFFFF"
+          style={styles.removeButton}
+          onPress={() => handleRemoveCity(item.name)}
+          compact
+        >
+          Remove
+        </Button>
+      </View>
+    </View>
   );
 
   if (isLoading) {
-    return <LoadingSpinner message="Loading cities..." />;
-  }
-
-  if (error && cities.length === 0) {
     return (
-      <ErrorMessage 
-        message={error} 
-        onRetry={loadCities} 
-      />
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" />
+        <Text style={styles.loadingText}>
+          Loading cities...
+        </Text>
+      </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      {/* Title - Exact match to design */}
-      <Text style={styles.title}>Cities</Text>
-      
-      {/* Cities List - Exact match to design with dashes */}
+      {/* Main Title - Exact match to screenshot */}
+
+
+      {/* Cities List - Plain text with dashes exactly like screenshot */}
       <FlatList
         data={cities}
         renderItem={renderCityItem}
         keyExtractor={(item) => `${item.name}-${item.country}`}
         ListEmptyComponent={
-          <Text style={styles.emptyText}>No cities added yet</Text>
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>
+              No cities added yet
+            </Text>
+          </View>
         }
         style={styles.list}
+        showsVerticalScrollIndicator={false}
       />
 
-      {/* Divider - Exact match to design */}
-      <View style={styles.divider} />
+      {/* Divider Line - Exact match to screenshot */}
+      <Divider style={styles.divider} />
 
-      {/* Search/Add Section - Exact match to design */}
-      <View style={styles.searchSection}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search for cities"
-          placeholderTextColor="#999"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          onSubmitEditing={handleAddCity}
-          returnKeyType="done"
-          testID="city-search-input"
-        />
-        <TouchableOpacity
-          style={[
-            styles.addButton,
-            (!searchQuery.trim() || isSearching) && styles.addButtonDisabled,
-          ]}
-          onPress={handleAddCity}
-          disabled={!searchQuery.trim() || isSearching}
-          testID="add-city-button"
+      {/* Add City Button - Plain text exactly like screenshot */}
+      <TouchableOpacity 
+        style={styles.addCityButton}
+        onPress={() => setAddModalVisible(true)}
+      >
+        <Text style={styles.addCityText}>+ Add city</Text>
+      </TouchableOpacity>
+
+      {/* Add City Modal */}
+      <Portal>
+        <Modal
+          visible={addModalVisible}
+          onDismiss={() => setAddModalVisible(false)}
+          contentContainerStyle={styles.modalContainer}
         >
-          <Text style={styles.addButtonText}>
-            {isSearching ? 'Adding...' : '+ Add city'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+          <Text style={styles.modalTitle}>Add New City</Text>
+          <TextInput
+            mode="outlined"
+            placeholder="Enter city name"
+            value={newCityName}
+            onChangeText={setNewCityName}
+            onSubmitEditing={handleAddCity}
+            returnKeyType="done"
+            style={styles.modalInput}
+            autoFocus
+          />
+          <View style={styles.modalActions}>
+            <Button
+              mode="outlined"
+              onPress={() => setAddModalVisible(false)}
+              style={styles.cancelButton}
+            >
+              Cancel
+            </Button>
+            <Button
+              mode="contained"
+              onPress={handleAddCity}
+              loading={isAdding}
+              disabled={isAdding}
+              style={styles.addButton}
+            >
+              Add City
+            </Button>
+          </View>
+        </Modal>
+      </Portal>
 
-      {error && cities.length > 0 && (
-        <ErrorMessage 
-          message={error} 
-          onRetry={loadCities}
-          retryButtonText="Reload Cities"
-        />
-      )}
+      {/* Snackbar for messages */}
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3000}
+        action={{
+          label: 'OK',
+          onPress: () => setSnackbarVisible(false),
+        }}
+      >
+        {snackbarMessage}
+      </Snackbar>
     </View>
   );
 };
@@ -212,56 +263,116 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 24,
-    paddingTop: 60, // Exact spacing from top like design
+    paddingTop: 60,
   },
-  title: {
-    fontSize: 34, // Exact size like design
-    fontWeight: '700', // Bold like design
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#666666',
+  },
+  mainTitle: {
+    fontSize: 34,
+    fontWeight: '700',
     color: '#000000',
-    marginBottom: 30, // Exact spacing like design
+    marginBottom: 30,
   },
   list: {
     flex: 1,
     marginBottom: 20,
   },
-  divider: {
-    height: 1,
-    backgroundColor: '#E5E5E5', // Light grey like design
-    marginBottom: 20, // Exact spacing like design
-  },
-  searchSection: {
+  cityItem: {
     flexDirection: 'row',
-    marginBottom: 30, // Exact spacing like design
-    gap: 12,
-  },
-  searchInput: {
-    flex: 1,
-    borderWidth: 0, // No border like design
-    fontSize: 17, // Exact font size like design
-    color: '#000000',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: 12,
-    // No background, no border like design
-  },
-  addButton: {
-    backgroundColor: 'transparent', // Transparent like design
     paddingHorizontal: 0,
-    paddingVertical: 12,
+  },
+  cityContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  dash: {
+    fontSize: 17,
+    color: '#000000',
+    fontWeight: '400',
+    marginRight: 8,
+    width: 10,
+  },
+  cityText: {
+    fontSize: 17,
+    color: '#000000',
+    fontWeight: '400',
+    flex: 1,
+  },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  historyButton: {
+    borderRadius: 6,
+  },
+  removeButton: {
+    borderRadius: 6,
+  },
+  emptyContainer: {
+    flex: 1,
     justifyContent: 'center',
-  },
-  addButtonDisabled: {
-    opacity: 0.5,
-  },
-  addButtonText: {
-    color: '#007AFF', // Blue color like design
-    fontSize: 17, // Exact font size like design
-    fontWeight: '400', // Regular weight like design
+    alignItems: 'center',
+    paddingVertical: 40,
   },
   emptyText: {
-    textAlign: 'center',
-    color: '#666666',
     fontSize: 17,
-    marginTop: 40,
+    color: '#666666',
     fontStyle: 'italic',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#E5E5E5',
+    marginBottom: 20,
+  },
+  addCityButton: {
+    paddingVertical: 12,
+    alignItems: 'flex-start',
+  },
+  addCityText: {
+    fontSize: 17,
+    color: '#007AFF',
+    fontWeight: '400',
+  },
+  // Modal styles
+  modalContainer: {
+    backgroundColor: 'white',
+    padding: 20,
+    margin: 20,
+    borderRadius: 12,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 16,
+  },
+  modalInput: {
+    marginBottom: 20,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
+  },
+  cancelButton: {
+    borderColor: '#C6C6C8',
+  },
+  addButton: {
+    backgroundColor: '#007AFF',
   },
 });
 

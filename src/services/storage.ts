@@ -6,6 +6,23 @@ import { Constants } from '../utils/constants';
  * Storage service for managing persistent data using AsyncStorage
  */
 class StorageService {
+
+    
+// Add this method to storage service for initial data
+    async initializeSampleData(): Promise<City[]> {
+        const sampleCities: City[] = [
+          { name: 'London', country: 'UK' },
+          { name: 'Paris', country: 'FR' },
+          { name: 'Vienna', country: 'AUT' },
+        ];
+        
+        await AsyncStorage.setItem(StorageKeys.CITIES, JSON.stringify(sampleCities));
+        return sampleCities;
+      }
+
+
+
+
   /**
    * Retrieves all saved cities from storage
    * @returns Array of City objects
